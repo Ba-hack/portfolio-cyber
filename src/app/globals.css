@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
+/*
+ * Palette de couleurs du site, définie une seule fois ici.
+ * Tailwind v4 lit ces variables CSS directement (pas besoin de fichier
+ * tailwind.config.js séparé) : elles deviennent utilisables comme classes
+ * utilitaires, ex. `bg-surface`, `text-accent`, `border-border`.
+ *
+ * Palette volontairement sobre : peu de couleurs, un seul accent (un vert
+ * "terminal" discret, cohérent avec le thème cybersécurité), pour un rendu
+ * clair et professionnel plutôt que "gadget".
+ */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #14171a;
+  --surface: #f6f7f8;
+  --border: #e2e5e8;
+  --muted-foreground: #5b6570;
+  --accent: #0f7a5f;
+  --accent-foreground: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0d0f;
+    --foreground: #e7eaec;
+    --surface: #14171a;
+    --border: #262b30;
+    --muted-foreground: #97a1aa;
+    --accent: #3ddc97;
+    --accent-foreground: #0b0d0f;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/*
+ * Styles de base pour le contenu Markdown converti en HTML (voir
+ * src/components/Prose.tsx). Tailwind ne stylise pas les balises brutes
+ * (h1, p, ul...) par défaut : on définit ici un minimum sobre et lisible,
+ * plutôt que d'ajouter le plugin @tailwindcss/typography pour un besoin
+ * simple.
+ */
+.prose-contenu :where(h2, h3) {
+  font-weight: 600;
+  margin-top: 1.75em;
+  margin-bottom: 0.6em;
+}
+.prose-contenu h2 {
+  font-size: 1.35rem;
+}
+.prose-contenu h3 {
+  font-size: 1.1rem;
+}
+.prose-contenu p {
+  margin-top: 0.9em;
+  margin-bottom: 0.9em;
+  line-height: 1.75;
+}
+.prose-contenu ul,
+.prose-contenu ol {
+  margin-top: 0.9em;
+  margin-bottom: 0.9em;
+  padding-left: 1.4em;
+  line-height: 1.7;
+}
+.prose-contenu ul {
+  list-style: disc;
+}
+.prose-contenu ol {
+  list-style: decimal;
+}
+.prose-contenu a {
+  color: var(--accent);
+  text-underline-offset: 2px;
+  text-decoration: underline;
+}
+.prose-contenu code {
+  font-family: var(--font-mono);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+}
+.prose-contenu pre {
+  font-family: var(--font-mono);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1em;
+  overflow-x: auto;
+  margin-top: 0.9em;
+  margin-bottom: 0.9em;
+}
+.prose-contenu pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+.prose-contenu blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1em;
+  margin: 1em 0;
+  color: var(--muted-foreground);
+  font-style: italic;
 }
