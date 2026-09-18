@@ -98,6 +98,36 @@ Ce projet n'utilise aucune variable d'environnement pour l'instant (pas de
 clé API, pas de base de données) : aucune configuration supplémentaire
 n'est nécessaire côté Vercel.
 
+## Sécurité automatisée (CI)
+
+Trois workflows GitHub Actions s'exécutent automatiquement à chaque `push`
+et `pull_request` vers `master` (et chaque semaine par sécurité), sans
+action manuelle. Les résultats apparaissent dans l'onglet **Security >
+Code scanning** du dépôt GitHub.
+
+| Fichier | Rôle | Outil |
+|---|---|---|
+| `.github/workflows/codeql.yml` | SAST général : analyse le code source à la recherche de failles (injection, mauvaise gestion des entrées, etc.) | [CodeQL](https://codeql.github.com/) (natif GitHub, gratuit) |
+| `.github/workflows/security.yml` → job `sca-dependances` | Analyse de composants (SCA) : vérifie les bibliothèques tierces installées | `npm audit` |
+| `.github/workflows/security.yml` → job `owasp-semgrep` | Scan ciblé sur les 10 catégories de l'[OWASP Top 10](https://owasp.org/www-project-top-ten/) | [Semgrep](https://semgrep.dev/) (règles publiques `p/owasp-top-ten`) |
+| `.github/workflows/security.yml` → job `secrets-gitleaks` | Détecte les secrets (clés API, mots de passe) commités par erreur, y compris dans l'historique Git | [Gitleaks](https://github.com/gitleaks/gitleaks) |
+| `.github/dependabot.yml` | Ouvre automatiquement une Pull Request quand une dépendance (ou une action GitHub) a une mise à jour de sécurité disponible | [Dependabot](https://docs.github.com/code-security/dependabot) (natif GitHub) |
+
+Chaque fichier de workflow est commenté en détail : voir directement dans
+`.github/` pour comprendre chaque étape.
+
+**Pourquoi plusieurs outils plutôt qu'un seul ?** Ils ne couvrent pas la
+même surface : CodeQL suit les flux de données dans la logique du code,
+Semgrep applique des règles ciblées OWASP, `npm audit`/Dependabot
+regardent les dépendances tierces, Gitleaks regarde les secrets. C'est la
+combinaison qui donne une couverture correcte, pas un seul outil isolé.
+
+**Pour vérifier que tout tourne** : après le premier push, aller dans
+l'onglet **Actions** du dépôt GitHub — les workflows "SAST - CodeQL" et
+"Sécurité - dépendances, OWASP et secrets" doivent apparaître et passer au
+vert (un premier scan CodeQL peut prendre quelques minutes de plus que les
+suivants).
+
 ## Prochaines étapes (hors périmètre de ce premier scratch)
 
 - **Forum** : nécessitera des comptes utilisateurs et une vraie base de

@@ -1,0 +1,39 @@
+# Dependabot : met à jour automatiquement les dépendances vulnérables.
+#
+# Rôle par rapport aux workflows de scan (voir .github/workflows/) :
+#   - "npm audit" et les scans SAST DÉTECTENT les problèmes à chaque push.
+#   - Dependabot, lui, agit en continu même sans nouveau push : il surveille
+#     les bases de vulnérabilités connues (GitHub Advisory Database) et
+#     ouvre automatiquement une Pull Request qui met à jour la dépendance
+#     concernée vers une version corrigée.
+#
+# Deux "écosystèmes" sont surveillés :
+#   - npm             : les packages du projet (Next.js, React, etc.)
+#   - github-actions  : les actions utilisées dans nos workflows CI
+#                       (actions/checkout, github/codeql-action, ...) —
+#                       important pour rester sur des versions à jour et
+#                       non dépréciées.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      # Vérification hebdomadaire : suffisant pour un projet personnel,
+      # évite d'être submergé de Pull Requests.
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "deps"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "ci"
+      - "security"
+    commit-message:
+      prefix: "ci"

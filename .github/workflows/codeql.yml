@@ -1,0 +1,55 @@
+# SAST (Static Application Security Testing) avec CodeQL.
+#
+# CodeQL est le moteur d'analyse statique de code développé par GitHub.
+# Contrairement à "npm audit" (qui regarde les DÉPENDANCES), CodeQL lit
+# directement NOTRE code source (fichiers .ts/.tsx) à la recherche de
+# vulnérabilités : injection, mauvaise gestion des entrées utilisateur,
+# fuite de données sensibles, etc. C'est gratuit et illimité pour un
+# dépôt public, et les résultats apparaissent dans l'onglet "Security"
+# du dépôt GitHub (sous-onglet "Code scanning").
+name: SAST - CodeQL
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  # Exécution programmée même sans nouveau push : les bases de règles
+  # CodeQL évoluent, un scan hebdomadaire peut donc détecter un problème
+  # sur du code qui n'a pas changé depuis longtemps.
+  schedule:
+    - cron: "0 4 * * 1" # tous les lundis à 4h du matin (UTC)
+  # Permet de lancer le scan manuellement depuis l'onglet "Actions" de GitHub.
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: Analyse CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      # Lire le code du dépôt...
+      contents: read
+      # ...et publier les résultats dans l'onglet Security.
+      security-events: write
+
+    steps:
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@v4
+
+      # Initialise l'analyseur CodeQL pour le langage JavaScript/TypeScript
+      # (identifiant unique "javascript-typescript" qui couvre les deux).
+      - name: Initialiser CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          # "security-extended" ajoute des règles de sécurité supplémentaires
+          # par rapport au jeu de règles par défaut (plus large que le strict
+          # minimum, sans être aussi bruyant qu'un mode "audit" complet).
+          queries: security-extended
+
+      # Pour du JS/TS il n'y a rien à compiler : CodeQL analyse directement
+      # les fichiers sources.
+      - name: Analyser le code
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:javascript-typescript"

@@ -1,0 +1,130 @@
+# Suite de scans de sécurité complémentaires à CodeQL (voir codeql.yml) :
+#
+#   1. sca-dependances   : audite les paquets npm installés (bibliothèques
+#                          tierces) à la recherche de failles connues.
+#   2. owasp-semgrep     : analyse le code source avec le jeu de règles
+#                          "OWASP Top 10" de Semgrep (injections, XSS,
+#                          mauvaise gestion des accès, etc.).
+#   3. secrets-gitleaks  : vérifie qu'aucun secret (clé API, mot de passe,
+#                          jeton...) n'a été commité par erreur dans le code.
+#
+# Différence avec CodeQL : CodeQL analyse la LOGIQUE du code (flux de
+# données dangereux). Semgrep, ici, applique des règles de correspondance
+# de motifs (pattern matching) ciblées sur les catégories OWASP — les deux
+# se complètent, c'est pour ça qu'on les fait tourner en parallèle plutôt
+# que de choisir l'un ou l'autre.
+name: Sécurité - dépendances, OWASP et secrets
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  schedule:
+    - cron: "0 4 * * 1" # tous les lundis à 4h du matin (UTC)
+  workflow_dispatch:
+
+jobs:
+  # --- 1. Analyse de composants (SCA) -------------------------------------
+  # Vérifie les dépendances déclarées dans package-lock.json par rapport à
+  # la base de vulnérabilités de npm (elle-même alimentée par la GitHub
+  # Advisory Database). Gratuit, aucun outil externe nécessaire.
+  sca-dependances:
+    name: Analyse des dépendances (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # "npm ci" (au lieu de "npm install") installe exactement les
+      # versions du fichier package-lock.json, sans le modifier : c'est
+      # la commande recommandée en CI, pour des builds reproductibles.
+      - name: Installer les dépendances
+        run: npm ci
+
+      # --audit-level=high : le job échoue seulement à partir d'une faille
+      # de sévérité "high" ou "critical". Les alertes "low"/"moderate" sont
+      # très fréquentes sur les dépendances transitives et rarement
+      # actionnables immédiatement ; les laisser bloquer chaque push
+      # créerait plus de bruit que de valeur. Dependabot (voir
+      # .github/dependabot.yml) continue de proposer des correctifs pour
+      # toutes les sévérités, en tâche de fond.
+      - name: Auditer les dépendances (npm audit)
+        run: npm audit --audit-level=high
+
+  # --- 2. Scan OWASP Top 10 (Semgrep) -------------------------------------
+  owasp-semgrep:
+    name: Scan OWASP Top 10 (Semgrep)
+    runs-on: ubuntu-latest
+    # Le scan tourne directement dans l'image officielle Semgrep : pas
+    # besoin d'installer quoi que ce soit manuellement.
+    container:
+      image: semgrep/semgrep
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@v4
+
+      # --config=p/owasp-top-ten : jeu de règles publiques Semgrep basé sur
+      # les 10 catégories du OWASP Top 10 (injection, authentification
+      # cassée, exposition de données sensibles...).
+      # On ajoute des jeux de règles spécifiques au langage/framework pour
+      # couvrir aussi les erreurs courantes propres à React/Next.js.
+      # "--sarif" produit un rapport au format standard (SARIF), que
+      # l'étape suivante publie dans l'onglet Security de GitHub.
+      # "|| true" : on ne fait pas échouer le job sur des résultats trouvés
+      # (ils restent visibles dans l'onglet Security) — seule une erreur
+      # d'exécution de Semgrep lui-même ferait échouer ce job.
+      - name: Lancer Semgrep (règles OWASP Top 10)
+        run: |
+          semgrep scan \
+            --config=p/owasp-top-ten \
+            --config=p/javascript \
+            --config=p/typescript \
+            --config=p/react \
+            --sarif --output=semgrep.sarif || true
+
+      - name: Publier les résultats dans l'onglet Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: semgrep.sarif
+
+  # --- 3. Détection de secrets (Gitleaks) ---------------------------------
+  # Complément naturel aux deux scans précédents : une clé API ou un mot de
+  # passe commité par erreur n'est ni une faille de dépendance, ni un motif
+  # de code vulnérable — c'est une catégorie à part que Gitleaks couvre.
+  secrets-gitleaks:
+    name: Détection de secrets (Gitleaks)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Récupérer l'historique complet du dépôt
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 = historique complet (pas seulement le dernier
+          # commit) : Gitleaks vérifie aussi les anciens commits, car un
+          # secret resterait visible dans l'historique même après sa
+          # suppression du code actuel.
+          fetch-depth: 0
+
+      - name: Scanner le dépôt à la recherche de secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Gitleaks-action est gratuit pour un dépôt public appartenant à
+          # un compte personnel (pas une organisation) : aucune clé de
+          # licence n'est nécessaire ici. Si ce dépôt est un jour transféré
+          # à une organisation GitHub, il faudra ajouter une variable
+          # GITLEAKS_LICENSE (licence gratuite "Starter" pour 1 dépôt,
+          # à demander sur gitleaks.io).
