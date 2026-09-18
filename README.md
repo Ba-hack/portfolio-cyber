@@ -85,18 +85,57 @@ exécute à chaque déploiement) ; `npm run lint` vérifie la qualité du code.
 
 ## Déploiement sur Vercel
 
-1. Créer un compte sur [vercel.com](https://vercel.com) (connexion possible
-   directement avec le compte GitHub).
-2. "Add New… > Project", puis sélectionner ce dépôt GitHub.
-3. Vercel détecte automatiquement Next.js — aucune configuration
-   nécessaire. Cliquer sur "Deploy".
-4. À chaque `git push` sur la branche principale, Vercel redéploie
-   automatiquement le site (aperçu automatique aussi sur les autres
-   branches/pull requests).
+Le dépôt GitHub est connecté à un projet Vercel (import fait une fois
+depuis vercel.com). Vercel et GitHub Actions sont deux systèmes
+**indépendants** qui réagissent chacun de leur côté aux mêmes événements
+GitHub :
+
+- Vercel construit et publie le site à chaque push (Preview pour une
+  branche/PR, Production pour `master`).
+- GitHub Actions fait tourner nos vérifications (voir plus bas).
+
+Vercel ne sait pas si nos vérifications passent ou échouent — c'est la
+protection de branche (section suivante) qui empêche du code non
+vérifié d'atteindre `master`, et donc la Production.
 
 Ce projet n'utilise aucune variable d'environnement pour l'instant (pas de
 clé API, pas de base de données) : aucune configuration supplémentaire
 n'est nécessaire côté Vercel.
+
+## Comment contribuer (workflow obligatoire)
+
+`master` est une branche **protégée** : il est impossible d'y pousser
+directement, même pour le propriétaire du dépôt (vérifié en pratique : un
+`git push origin master` direct est rejeté par GitHub avec l'erreur
+`GH006: Protected branch update failed`). Tout changement, y compris un
+petit, doit passer par une Pull Request :
+
+```bash
+git checkout -b ma-modification
+# ... modifications ...
+git add -A
+git commit -m "Description du changement"
+git push -u origin ma-modification
+gh pr create   # ou depuis l'interface GitHub
+```
+
+La Pull Request ne peut être fusionnée dans `master` que si les 5
+vérifications suivantes réussissent (visibles directement sur la PR) :
+
+- `Build + lint`
+- `Analyse CodeQL`
+- `Analyse des dépendances (npm audit)`
+- `Scan OWASP Top 10 (Semgrep)`
+- `Détection de secrets (Gitleaks)`
+
+Vercel crée aussi automatiquement un déploiement **Preview** pour la
+branche/PR (lien affiché en commentaire sur la PR) : on peut donc visiter
+la version de test avant de fusionner. Ce n'est qu'une fois la PR
+fusionnée que Vercel republie la Production — jamais avant, jamais sur du
+code qui n'a pas été vérifié.
+
+Ce réglage est fait au niveau du dépôt GitHub (Settings > Branches), pas
+dans le code du projet.
 
 ## Sécurité automatisée (CI)
 
