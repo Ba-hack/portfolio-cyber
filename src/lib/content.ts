@@ -28,7 +28,12 @@ import type { ContentItem } from "./types";
 const CONTENT_ROOT = path.join(process.cwd(), "content");
 
 /** Types de contenu gérés, un par sous-dossier de /content. */
-export type ContentType = "portfolio" | "formations" | "recherches" | "veille";
+export type ContentType =
+  | "portfolio"
+  | "formations"
+  | "recherches"
+  | "veille"
+  | "experiences";
 
 function getContentDir(type: ContentType): string {
   return path.join(CONTENT_ROOT, type);
