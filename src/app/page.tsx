@@ -19,7 +19,12 @@ export default function AccueilPage() {
         {/* TODO: remplacer ce paragraphe par une vraie présentation personnelle. */}
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <CarteAccueil
+          href="/experience"
+          titre="Expérience"
+          description="Mon parcours : stages et engagements."
+        />
         <CarteAccueil
           href="/portfolio"
           titre="Portfolio"

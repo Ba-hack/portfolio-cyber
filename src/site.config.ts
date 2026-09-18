@@ -28,6 +28,7 @@ export const siteConfig = {
  * `href` doit correspondre à un dossier de route sous src/app.
  */
 export const navLinks = [
+  { href: "/experience", label: "Expérience" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/formations", label: "Formations" },
   { href: "/cybersecurite", label: "Cybersécurité" },

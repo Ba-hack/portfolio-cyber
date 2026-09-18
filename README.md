@@ -22,6 +22,7 @@ forum sera développé, il faudra une vraie base de données (voir plus bas).
 
 ```
 content/                 # Tout le contenu éditorial, en Markdown
+  experiences/*.md        # Un fichier = une expérience (stage, association...)
   portfolio/*.md          # Un fichier = un projet
   formations/*.md         # Un fichier = un TP / une formation
   recherches/*.md         # Un fichier = une recherche personnelle
@@ -31,6 +32,7 @@ src/
   app/                    # Routes du site (App Router de Next.js)
     layout.tsx             # Structure commune à toutes les pages (header/footer)
     page.tsx                # Page d'accueil
+    experience/              # /experience et /experience/[slug]
     portfolio/               # /portfolio et /portfolio/[slug]
     formations/               # /formations et /formations/[slug]
     cybersecurite/              # /cybersecurite (hub)
@@ -55,6 +57,9 @@ Chaque section correspond à un dossier dans `content/`. Pour ajouter un
 frontmatter attendu (voir les fichiers d'exemple déjà présents pour le
 modèle exact) :
 
+- `content/experiences/mon-experience.md` — champs : `title`, `description`,
+  `date` (utilisée pour le tri), `organisation`, `role`, `periode` (texte
+  affiché tel quel, ex. "2022 – 2024"), `lieu` (optionnel), `tags`.
 - `content/portfolio/mon-projet.md` — champs : `title`, `description`,
   `date`, `tags`, `lienDemo` (optionnel), `lienDepot` (optionnel).
 - `content/formations/mon-tp.md` — champs : `title`, `description`,

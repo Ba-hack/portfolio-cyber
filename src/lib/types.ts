@@ -44,6 +44,21 @@ export interface FormationFrontmatter extends FrontmatterCommun {
 export type RechercheFrontmatter = FrontmatterCommun;
 
 /**
+ * Une expérience (stage, engagement associatif...), listée dans la
+ * section Expérience — le pendant "CV" du site, distinct du Portfolio qui
+ * lui rassemble des projets techniques autonomes.
+ */
+export interface ExperienceFrontmatter extends FrontmatterCommun {
+  /** Structure concernée, ex. "CF Consulting". */
+  organisation: string;
+  /** Intitulé du rôle occupé, ex. "Stagiaire opérateur". */
+  role: string;
+  /** Période affichée telle quelle, ex. "Depuis juin 2026" ou "2022 – 2024". */
+  periode: string;
+  lieu?: string;
+}
+
+/**
  * Un article de veille : résumé d'un article de presse externe, avec un
  * lien vers la source originale (jamais le texte intégral recopié, pour
  * respecter le droit d'auteur — voir README).
