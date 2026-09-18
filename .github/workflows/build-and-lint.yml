@@ -1,0 +1,41 @@
+# Vérification de base : le projet compile et respecte les règles de lint.
+#
+# Ce n'est pas un scan de sécurité (voir codeql.yml et security.yml pour
+# ça) : c'est un filet de sécurité fonctionnel. Sans lui, une mise à jour
+# de dépendance peut casser le build ou le lint sans qu'aucun des scans de
+# sécurité ne le remarque (ils vérifient des failles, pas que le site
+# fonctionne toujours). C'est exactement ce qui s'est produit en pratique
+# lors de la mise en place de ce dépôt : deux Pull Requests Dependabot
+# (TypeScript 7 et ESLint 10) passaient tous les scans de sécurité alors
+# que `npm run lint` échouait dessus — seul un test manuel l'avait révélé.
+name: Build et lint
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  build-and-lint:
+    name: Build + lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Installer Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Vérifier que le site compile
+        run: npm run build
+
+      - name: Vérifier les règles de lint
+        run: npm run lint

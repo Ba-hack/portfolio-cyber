@@ -112,6 +112,7 @@ Code scanning** du dépôt GitHub.
 | `.github/workflows/security.yml` → job `owasp-semgrep` | Scan ciblé sur les 10 catégories de l'[OWASP Top 10](https://owasp.org/www-project-top-ten/) | [Semgrep](https://semgrep.dev/) (règles publiques `p/owasp-top-ten`) |
 | `.github/workflows/security.yml` → job `secrets-gitleaks` | Détecte les secrets (clés API, mots de passe) commités par erreur, y compris dans l'historique Git | [Gitleaks](https://github.com/gitleaks/gitleaks) |
 | `.github/dependabot.yml` | Ouvre automatiquement une Pull Request quand une dépendance (ou une action GitHub) a une mise à jour de sécurité disponible | [Dependabot](https://docs.github.com/code-security/dependabot) (natif GitHub) |
+| `.github/workflows/build-and-lint.yml` | Filet de sécurité fonctionnel : vérifie que le site compile toujours et respecte le lint — pas un scan de sécurité, mais nécessaire pour ne pas fusionner une mise à jour de dépendance qui casse le site sans qu'aucun scan ne le remarque | `npm run build` + `npm run lint` |
 
 Chaque fichier de workflow est commenté en détail : voir directement dans
 `.github/` pour comprendre chaque étape.
