@@ -7,6 +7,18 @@
 # fuite de données sensibles, etc. C'est gratuit et illimité pour un
 # dépôt public, et les résultats apparaissent dans l'onglet "Security"
 # du dépôt GitHub (sous-onglet "Code scanning").
+#
+# Note sur les versions d'actions ci-dessous : chaque `uses:` est épinglé
+# sur un hash de commit précis (ex. @11d5960a...) plutôt que sur un tag
+# mobile comme "@v4". Un tag comme "v4" peut être redéplacé par son
+# propriétaire pour pointer vers un autre commit ; un hash, lui, est
+# immuable. C'est une recommandation standard de sécurité de la chaîne
+# d'approvisionnement (supply chain) pour la CI — Semgrep signale
+# d'ailleurs cette pratique via la règle
+# "github-actions-mutable-action-tag". Le numéro de version en
+# commentaire à côté du hash sert juste de repère lisible ; Dependabot
+# (voir .github/dependabot.yml) continue de proposer des mises à jour de
+# hash automatiquement quand une nouvelle version sort.
 name: SAST - CodeQL
 
 on:
@@ -34,12 +46,12 @@ jobs:
 
     steps:
       - name: Récupérer le code du dépôt
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # Initialise l'analyseur CodeQL pour le langage JavaScript/TypeScript
       # (identifiant unique "javascript-typescript" qui couvre les deux).
       - name: Initialiser CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
           languages: javascript-typescript
           # "security-extended" ajoute des règles de sécurité supplémentaires
@@ -50,6 +62,6 @@ jobs:
       # Pour du JS/TS il n'y a rien à compiler : CodeQL analyse directement
       # les fichiers sources.
       - name: Analyser le code
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
           category: "/language:javascript-typescript"

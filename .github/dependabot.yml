@@ -13,6 +13,14 @@
 #                       (actions/checkout, github/codeql-action, ...) —
 #                       important pour rester sur des versions à jour et
 #                       non dépréciées.
+# "cooldown" (repris sur les deux écosystèmes ci-dessous) : Dependabot
+# n'ouvre une Pull Request qu'une fois la nouvelle version publiée depuis
+# au moins N jours. Objectif : se protéger d'une attaque de la chaîne
+# d'approvisionnement où un paquet compromis serait publié puis retiré
+# quelques heures/jours plus tard — laisser passer un peu de temps donne
+# une chance à la communauté de détecter le problème avant qu'on
+# n'installe la version concernée. Les mises à jour de SÉCURITÉ (failles
+# déjà connues) ne sont, elles, jamais retardées par ce mécanisme.
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -27,6 +35,11 @@ updates:
       - "security"
     commit-message:
       prefix: "deps"
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+      semver-minor-days: 3
+      semver-patch-days: 1
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -37,3 +50,8 @@ updates:
       - "security"
     commit-message:
       prefix: "ci"
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+      semver-minor-days: 3
+      semver-patch-days: 1

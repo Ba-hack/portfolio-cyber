@@ -116,6 +116,14 @@ Code scanning** du dépôt GitHub.
 Chaque fichier de workflow est commenté en détail : voir directement dans
 `.github/` pour comprendre chaque étape.
 
+Les actions utilisées (`actions/checkout`, `github/codeql-action`...) sont
+épinglées sur un hash de commit précis plutôt que sur un tag mobile
+(`@v4`), et `dependabot.yml` applique un délai ("cooldown") avant
+d'appliquer une mise à jour de routine — deux mesures de durcissement de
+la chaîne d'approvisionnement CI, elles-mêmes repérées comme manquantes
+par le premier scan Semgrep lancé sur ce dépôt (preuve que le pipeline
+fonctionne).
+
 **Pourquoi plusieurs outils plutôt qu'un seul ?** Ils ne couvrent pas la
 même surface : CodeQL suit les flux de données dans la logique du code,
 Semgrep applique des règles ciblées OWASP, `npm audit`/Dependabot
