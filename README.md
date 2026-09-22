@@ -72,8 +72,9 @@ modèle exact) :
   propres mots et ne jamais copier le texte de l'article original** —
   seul un lien vers la source est publié (droit d'auteur). Voir aussi la
   section [Veille automatique](#veille-cybersécurité-automatique)
-  ci-dessous : la plupart des fiches de cette section sont générées par
-  un job quotidien plutôt qu'écrites à la main.
+  ci-dessous : la plupart des fiches de cette section démarrent comme des
+  brouillons bruts générés par un job quotidien, puis sont reformulées à
+  la main avant fusion.
 
 Le nom du fichier (sans `.md`) devient l'URL de la page (le "slug"). Une
 fois le fichier ajouté et poussé sur GitHub, Vercel régénère
@@ -89,24 +90,27 @@ automatiquement, une fois par jour, des brouillons de fiches pour
    Krebs on Security, Dark Reading, CERT-FR avis et alertes — liste dans
    `scripts/veille/sources.mjs`) — uniquement le titre et l'extrait
    officiel fourni pour la syndication, jamais l'article complet.
-2. Fait reformuler cet extrait par un modèle de langage (Claude Haiku) en
-   un résumé factuel de 2-3 phrases en français, avec ses propres mots —
-   jamais une copie du texte source.
-3. Écrit un fichier Markdown par nouvel article (maximum 6 par exécution),
-   en ignorant automatiquement les articles déjà publiés (comparaison sur
-   `sourceUrl`).
-4. Ouvre une Pull Request avec ces brouillons.
+2. Écrit un fichier Markdown par nouvel article (maximum 6 par exécution),
+   avec ce titre et cet extrait **tels quels, non reformulés**, marqués
+   par un tag `Brouillon` — en ignorant automatiquement les articles déjà
+   publiés (comparaison sur `sourceUrl`).
+3. Ouvre une Pull Request avec ces brouillons.
+
+Le script n'appelle volontairement aucun service d'IA pour reformuler ces
+brouillons : ça éviterait de stocker une clé d'API tierce comme secret
+GitHub, ce qu'on préfère éviter. La reformulation "avec ses propres mots"
+(voir [Ajouter du contenu](#ajouter-du-contenu)) devient donc une étape
+humaine, faite au moment de la relecture de chaque Pull Request — avant de
+fusionner, il faut réécrire le résumé et retirer le tag `Brouillon`.
 
 **Aucune publication automatique directe** : la Pull Request générée doit
-être relue (vérifier que chaque résumé est fidèle à l'article original,
-ajuster si besoin) puis fusionnée manuellement, comme toute autre PR —
+être relue et corrigée puis fusionnée manuellement, comme toute autre PR —
 elle passe d'ailleurs par les 5 mêmes vérifications obligatoires (voir
 [Sécurité automatisée](#sécurité-automatisée-ci)).
 
-**Secrets à configurer** (Settings > Secrets and variables > Actions du
+**Secret à configurer** (Settings > Secrets and variables > Actions du
 dépôt GitHub) pour que ce job fonctionne :
 
-- `ANTHROPIC_API_KEY` — clé d'API utilisée pour générer les résumés.
 - `PAT_VEILLE` — un Personal Access Token *fine-grained*, limité à ce
   dépôt, avec les permissions "Contents" et "Pull requests" en écriture.
   Nécessaire car le jeton `GITHUB_TOKEN` fourni par défaut à un workflow
@@ -115,8 +119,8 @@ dépôt GitHub) pour que ce job fonctionne :
   GitHub) — sans ce PAT, la PR resterait bloquée en attente de
   vérifications qui ne se lanceraient jamais.
 
-Testable manuellement en local avec `ANTHROPIC_API_KEY=... npm run
-veille:generate`, ou depuis GitHub via l'onglet Actions (`workflow_dispatch`).
+Testable manuellement en local avec `npm run veille:generate`, ou depuis
+GitHub via l'onglet Actions (`workflow_dispatch`).
 
 ## Lancer le site en local
 
