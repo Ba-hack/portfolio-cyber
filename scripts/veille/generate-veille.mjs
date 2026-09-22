@@ -7,15 +7,15 @@
 // qui ouvre ensuite une Pull Request avec les fichiers générés — jamais de
 // publication directe (voir ce workflow pour le détail du pourquoi).
 //
-// Volontairement pas d'appel à un service d'IA ici : ça éviterait de
-// stocker une clé d'API tierce comme secret GitHub, ce qu'on préfère
-// éviter. Le script se contente donc de récupérer le titre et l'extrait
-// officiel fourni par chaque flux RSS pour la syndication (jamais
-// l'article complet) et d'en faire un brouillon brut, clairement signalé
-// comme tel — jamais publié sans reformulation humaine (voir la mention
-// "Brouillon" ajoutée dans chaque fichier généré et le tag associé).
+// Principe de prudence sur le droit d'auteur ET sur l'honnêteté envers les
+// lecteurs : on ne récupère jamais l'article complet, seulement le titre
+// et l'extrait officiel fourni par le flux RSS pour la syndication. Le
+// résumé final est une reformulation factuelle et courte de cet extrait,
+// jamais une copie — et jamais rédigé pour donner l'impression d'un
+// article indépendant : la fiche affiche toujours la source et un lien
+// vers l'article original (voir le template de la page détail).
 //
-// Usage : node scripts/veille/generate-veille.mjs
+// Usage : ANTHROPIC_API_KEY=... node scripts/veille/generate-veille.mjs
 
 import fs from "node:fs";
 import path from "node:path";
@@ -25,8 +25,10 @@ import matter from "gray-matter";
 import { sources } from "./sources.mjs";
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "veille");
-// Plafond volontaire : garde chaque Pull Request générée facile à relire.
+// Plafond volontaire : garde chaque Pull Request générée facile à relire,
+// et limite le nombre d'appels à l'API de résumé à chaque exécution.
 const MAX_NEW_ARTICLES = 6;
+const MODEL = "claude-haiku-4-5-20251001";
 
 const parser = new Parser({
   headers: { "User-Agent": "PortfolioCyberVeilleBot/1.0" },
@@ -105,30 +107,78 @@ async function collectCandidates(existingUrls) {
 }
 
 /**
- * Écrit un brouillon à partir d'un candidat RSS brut (titre + extrait
- * officiel, non reformulés). Le champ `description` reprend l'extrait tel
- * quel : à remplacer par un vrai résumé "avec ses propres mots" au moment
- * de la relecture de la Pull Request, avant toute fusion.
+ * Demande à un modèle de langage de reformuler l'extrait en un résumé
+ * factuel court, en français, avec ses propres mots. N'envoie jamais que
+ * le titre + l'extrait officiel (jamais l'article complet), et cadre
+ * explicitement le résumé comme une fiche de veille attribuée — jamais un
+ * article indépendant qui masquerait sa source.
  */
-function writeVeilleFile({ title, link, date, excerpt, sourceNom }) {
-  const slug = uniqueSlug(slugify(title), link);
+async function summarize({ title, excerpt, sourceNom }) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error("ANTHROPIC_API_KEY manquante");
+  }
+
+  const prompt = `Tu aides à la veille en cybersécurité pour un site personnel francophone.
+Le résumé que tu vas produire sera toujours publié avec le nom de la source et un lien vers l'article original juste en dessous : ce n'est pas un article indépendant, c'est une fiche de veille qui doit donner envie d'aller lire la source, pas la remplacer.
+
+À partir du titre et de l'extrait officiel ci-dessous (jamais l'article complet), rédige :
+- un résumé factuel COURT (2 à 3 phrases maximum), en français, avec tes propres mots, sans jamais reprendre mot pour mot le texte source, et sans chercher à donner l'impression d'un reportage original ou indépendant ;
+- si le titre original n'est pas en français, une traduction française naturelle du titre ;
+- 1 à 3 mots-clés pertinents en français (ex. "Ransomware", "Fuite de données").
+
+Réponds uniquement avec un objet JSON strict de la forme :
+{"titre": "...", "resume": "...", "tags": ["..."]}
+
+Titre original : ${title}
+Source : ${sourceNom}
+Extrait officiel : ${excerpt}`;
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 500,
+      temperature: 0.3,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Anthropic API ${response.status} : ${await response.text()}`);
+  }
+
+  const data = await response.json();
+  const text = data.content?.[0]?.text ?? "";
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error(`Réponse IA non exploitable : ${text}`);
+  }
+  return JSON.parse(jsonMatch[0]);
+}
+
+function writeVeilleFile({ link, date, sourceNom, titre, resume, tags }) {
+  const slug = uniqueSlug(slugify(titre), link);
   const filePath = path.join(CONTENT_DIR, `${slug}.md`);
 
   const frontmatter = {
-    title,
-    description: excerpt || title,
+    title: titre,
+    description: resume,
     date,
     sourceNom,
     sourceUrl: link,
-    tags: ["Brouillon"],
+    tags: tags && tags.length > 0 ? tags : undefined,
   };
 
-  const corps = [
-    "> **Brouillon généré automatiquement à partir d'un flux RSS.**",
-    "> À reformuler avec ses propres mots (et à retirer le tag \"Brouillon\") avant publication — voir README, section Veille automatique.",
-    "",
-    excerpt || "(Pas d'extrait fourni par la source — se référer au lien ci-dessous.)",
-  ].join("\n");
+  // Le commentaire HTML est invisible à l'affichage (voir Prose.tsx) :
+  // c'est un rappel pour la relecture humaine de la Pull Request, pas pour
+  // les visiteurs du site.
+  const corps = `<!-- Résumé généré automatiquement par IA à partir d'un extrait RSS officiel. Vérifier la fidélité à la source avant de fusionner. -->\n${resume}`;
 
   const fileContent = matter.stringify(`${corps}\n`, frontmatter);
   fs.mkdirSync(CONTENT_DIR, { recursive: true });
@@ -145,11 +195,18 @@ async function main() {
     return;
   }
 
+  let created = 0;
   for (const candidate of candidates) {
-    writeVeilleFile(candidate);
+    try {
+      const { titre, resume, tags } = await summarize(candidate);
+      writeVeilleFile({ ...candidate, titre, resume, tags });
+      created += 1;
+    } catch (err) {
+      console.warn(`[veille] Article ignoré ("${candidate.title}") : ${err.message}`);
+    }
   }
 
-  console.log(`[veille] ${candidates.length} brouillon(s) généré(s).`);
+  console.log(`[veille] ${created} nouvel(aux) article(s) généré(s) sur ${candidates.length} candidat(s).`);
 }
 
 main().catch((err) => {
