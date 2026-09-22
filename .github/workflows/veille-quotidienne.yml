@@ -5,20 +5,24 @@
 #   1. Récupère les derniers articles de chaque flux RSS — titre + extrait
 #      officiel fourni par la source pour la syndication, jamais le texte
 #      intégral de l'article.
-#   2. Écrit un brouillon de fiche content/veille/*.md par nouvel article,
-#      avec ce titre et cet extrait tels quels, marqués "Brouillon".
-#      Volontairement pas de reformulation automatique par IA ici : ça
-#      éviterait de stocker une clé d'API tierce comme secret GitHub, ce
-#      qu'on préfère éviter.
-#   3. Ouvre une Pull Request avec ces brouillons — jamais de publication
+#   2. Fait reformuler cet extrait en un résumé factuel COURT (2-3 phrases)
+#      par un modèle de langage (Claude Haiku), jamais une copie du texte
+#      source, et jamais rédigé pour masquer la source — chaque fiche
+#      affiche de toute façon sourceNom + un lien vers l'article original.
+#   3. Écrit un brouillon de fiche content/veille/*.md par nouvel article.
+#   4. Ouvre une Pull Request avec ces brouillons — jamais de publication
 #      directe. La protection de branche sur master impose de toute façon
 #      une relecture humaine et les 5 vérifications habituelles avant toute
-#      fusion (voir security.yml, codeql.yml, build-and-lint.yml). C'est
-#      au moment de cette relecture que chaque brouillon doit être
-#      reformulé avec ses propres mots (et le tag "Brouillon" retiré)
-#      avant de fusionner.
+#      fusion (voir security.yml, codeql.yml, build-and-lint.yml) : relire
+#      chaque résumé généré avant de fusionner reste indispensable, un LLM
+#      peut se tromper ou mal interpréter un extrait.
 #
-# Secret nécessaire (Settings > Secrets and variables > Actions) :
+# Secrets nécessaires (Settings > Secrets and variables > Actions) :
+#   - ANTHROPIC_API_KEY : clé d'API utilisée pour générer les résumés. Ce
+#     secret n'est JAMAIS visible (ni pour vous après sa création, ni pour
+#     les visiteurs du dépôt, même public) et n'est utilisé que par ce
+#     workflow, déclenché uniquement par planification/manuel — jamais par
+#     une Pull Request externe ou par Dependabot, qui n'y ont pas accès.
 #   - PAT_VEILLE : un Personal Access Token "fine-grained", limité à ce
 #     dépôt, avec les permissions "Contents" et "Pull requests" en écriture.
 #     Nécessaire car le jeton GITHUB_TOKEN fourni automatiquement par
@@ -62,6 +66,8 @@ jobs:
         run: npm ci
 
       - name: Générer les brouillons d'articles
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: npm run veille:generate
 
       - name: Vérifier s'il y a de nouveaux brouillons
@@ -87,6 +93,6 @@ jobs:
           git push origin "$branch"
           gh pr create \
             --title "Veille cyber — brouillons du $(date +%Y-%m-%d)" \
-            --body "PR générée automatiquement par le job de veille quotidien. Chaque fichier est un brouillon brut (titre + extrait RSS officiel, tag \"Brouillon\") : à reformuler avec ses propres mots et à retirer le tag \"Brouillon\" avant de fusionner." \
+            --body "PR générée automatiquement par le job de veille quotidien. À relire avant fusion : vérifier que chaque résumé généré par IA est fidèle à l'article source, ajuster les tags si besoin." \
             --base master \
             --head "$branch"
