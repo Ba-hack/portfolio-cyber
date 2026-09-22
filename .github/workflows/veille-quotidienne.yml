@@ -1,0 +1,92 @@
+# Génère automatiquement des brouillons d'articles de veille cybersécurité,
+# une fois par jour, à partir des flux RSS listés dans scripts/veille/sources.mjs.
+#
+# Déroulé, volontairement prudent (voir scripts/veille/generate-veille.mjs) :
+#   1. Récupère les derniers articles de chaque flux RSS — titre + extrait
+#      officiel fourni par la source pour la syndication, jamais le texte
+#      intégral de l'article.
+#   2. Fait reformuler cet extrait en un résumé factuel de quelques phrases
+#      par un modèle de langage (jamais une copie du texte source).
+#   3. Écrit un brouillon de fiche content/veille/*.md par nouvel article.
+#   4. Ouvre une Pull Request avec ces brouillons — jamais de publication
+#      directe. La protection de branche sur master impose de toute façon
+#      une relecture humaine et les 5 vérifications habituelles avant toute
+#      fusion (voir security.yml, codeql.yml, build-and-lint.yml) : relire
+#      chaque résumé généré avant de fusionner reste indispensable, un LLM
+#      peut se tromper ou mal interpréter un extrait.
+#
+# Secrets nécessaires (Settings > Secrets and variables > Actions) :
+#   - ANTHROPIC_API_KEY : clé d'API utilisée pour générer les résumés.
+#   - PAT_VEILLE : un Personal Access Token "fine-grained", limité à ce
+#     dépôt, avec les permissions "Contents" et "Pull requests" en écriture.
+#     Nécessaire car le jeton GITHUB_TOKEN fourni automatiquement par
+#     GitHub ne peut pas déclencher les autres workflows (CodeQL, Semgrep,
+#     build+lint...) sur la Pull Request qu'il crée lui-même — c'est une
+#     protection anti-boucle infinie de GitHub, pas un oubli de notre part.
+#     Sans ce PAT, la PR générée resterait bloquée en attente de checks qui
+#     ne se lanceraient jamais.
+name: Veille cybersécurité quotidienne
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # tous les jours à 6h UTC
+  workflow_dispatch:
+
+# Le jeton par défaut du job n'a besoin d'aucun droit d'écriture : toutes
+# les opérations sensibles (push, création de PR) utilisent le PAT dédié
+# ci-dessous, jamais ce jeton.
+permissions:
+  contents: read
+
+jobs:
+  generate-veille:
+    name: Générer les brouillons de veille
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # Le PAT ici (au lieu du jeton par défaut) permet aux étapes
+          # git suivantes de pousser une branche avec les droits nécessaires.
+          token: ${{ secrets.PAT_VEILLE }}
+
+      - name: Installer Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Générer les brouillons d'articles
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm run veille:generate
+
+      - name: Vérifier s'il y a de nouveaux brouillons
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain content/veille)" ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ouvrir une Pull Request avec les nouveaux brouillons
+        if: steps.changes.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PAT_VEILLE }}
+        run: |
+          branch="veille/auto-$(date +%Y-%m-%d)"
+          git config user.name "veille-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add content/veille
+          git commit -m "veille: nouveaux brouillons automatiques ($(date +%Y-%m-%d))"
+          git push origin "$branch"
+          gh pr create \
+            --title "Veille cyber — brouillons du $(date +%Y-%m-%d)" \
+            --body "PR générée automatiquement par le job de veille quotidien. À relire avant fusion : vérifier que chaque résumé est fidèle à l'article source, ajuster les tags si besoin." \
+            --base master \
+            --head "$branch"
