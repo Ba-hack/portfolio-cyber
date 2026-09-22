@@ -7,10 +7,20 @@ sourceUrl: "https://exemple.com/article-original"
 tags: ["Fuite de données", "Actualité"]
 ---
 
-Ceci est un exemple de fiche de veille. Le contenu ci-dessous doit rester
-un **résumé court, écrit avec vos propres mots** — jamais une copie du
-texte original (droit d'auteur) — avec en bas de page un lien bien visible
-vers l'article source (`sourceUrl` dans l'en-tête).
+Ceci est un exemple de fiche de veille. Le premier paragraphe doit rester
+un **résumé factuel court, écrit avec vos propres mots** — jamais une
+copie du texte original (droit d'auteur) — avec en bas de page un lien
+bien visible vers l'article source (`sourceUrl` dans l'en-tête). Résumez
+ici les points clés : qui est concerné, quelles données, quelle ampleur.
 
-Résumez ici les points clés : qui est concerné, quelles données, quelle
-ampleur, quelles recommandations.
+## Pourquoi c'est important
+
+Ajoutez ensuite un vrai paragraphe d'analyse personnelle, distinct du
+résumé : pourquoi ça compte, quelles implications pour la défense, quel
+lien avec d'autres sujets — du contenu original qui vous appartient,
+pas une reformulation de l'article sous un autre angle. C'est cette partie
+qui distingue une fiche de veille d'un simple copier-coller de titre.
+
+*(Les fiches générées automatiquement par `scripts/veille/generate-veille.mjs`
+suivent exactement cette structure — voir la section "Veille cybersécurité
+automatique" du README.)*
