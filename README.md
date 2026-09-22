@@ -70,11 +70,53 @@ modèle exact) :
 - `content/veille/mon-resume.md` — champs : `title`, `description`,
   `date`, `sourceNom`, `sourceUrl`, `tags`. **Toujours résumer avec ses
   propres mots et ne jamais copier le texte de l'article original** —
-  seul un lien vers la source est publié (droit d'auteur).
+  seul un lien vers la source est publié (droit d'auteur). Voir aussi la
+  section [Veille automatique](#veille-cybersécurité-automatique)
+  ci-dessous : la plupart des fiches de cette section sont générées par
+  un job quotidien plutôt qu'écrites à la main.
 
 Le nom du fichier (sans `.md`) devient l'URL de la page (le "slug"). Une
 fois le fichier ajouté et poussé sur GitHub, Vercel régénère
 automatiquement le site avec le nouveau contenu.
+
+## Veille cybersécurité automatique
+
+Un job planifié (`.github/workflows/veille-quotidienne.yml`) génère
+automatiquement, une fois par jour, des brouillons de fiches pour
+`content/veille/` :
+
+1. Récupère les derniers articles de 5 flux RSS reconnus (The Hacker News,
+   Krebs on Security, Dark Reading, CERT-FR avis et alertes — liste dans
+   `scripts/veille/sources.mjs`) — uniquement le titre et l'extrait
+   officiel fourni pour la syndication, jamais l'article complet.
+2. Fait reformuler cet extrait par un modèle de langage (Claude Haiku) en
+   un résumé factuel de 2-3 phrases en français, avec ses propres mots —
+   jamais une copie du texte source.
+3. Écrit un fichier Markdown par nouvel article (maximum 6 par exécution),
+   en ignorant automatiquement les articles déjà publiés (comparaison sur
+   `sourceUrl`).
+4. Ouvre une Pull Request avec ces brouillons.
+
+**Aucune publication automatique directe** : la Pull Request générée doit
+être relue (vérifier que chaque résumé est fidèle à l'article original,
+ajuster si besoin) puis fusionnée manuellement, comme toute autre PR —
+elle passe d'ailleurs par les 5 mêmes vérifications obligatoires (voir
+[Sécurité automatisée](#sécurité-automatisée-ci)).
+
+**Secrets à configurer** (Settings > Secrets and variables > Actions du
+dépôt GitHub) pour que ce job fonctionne :
+
+- `ANTHROPIC_API_KEY` — clé d'API utilisée pour générer les résumés.
+- `PAT_VEILLE` — un Personal Access Token *fine-grained*, limité à ce
+  dépôt, avec les permissions "Contents" et "Pull requests" en écriture.
+  Nécessaire car le jeton `GITHUB_TOKEN` fourni par défaut à un workflow
+  ne peut pas déclencher les autres workflows (CodeQL, Semgrep...) sur la
+  Pull Request qu'il crée lui-même (protection anti-boucle infinie de
+  GitHub) — sans ce PAT, la PR resterait bloquée en attente de
+  vérifications qui ne se lanceraient jamais.
+
+Testable manuellement en local avec `ANTHROPIC_API_KEY=... npm run
+veille:generate`, ou depuis GitHub via l'onglet Actions (`workflow_dispatch`).
 
 ## Lancer le site en local
 
