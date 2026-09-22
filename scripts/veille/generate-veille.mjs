@@ -107,11 +107,16 @@ async function collectCandidates(existingUrls) {
 }
 
 /**
- * Demande à un modèle de langage de reformuler l'extrait en un résumé
- * factuel court, en français, avec ses propres mots. N'envoie jamais que
- * le titre + l'extrait officiel (jamais l'article complet), et cadre
- * explicitement le résumé comme une fiche de veille attribuée — jamais un
- * article indépendant qui masquerait sa source.
+ * Demande à un modèle de langage de produire, à partir de l'extrait :
+ *  - un résumé factuel court (les faits, jamais copiés du texte source) ;
+ *  - une analyse ORIGINALE distincte (implications, contexte technique,
+ *    ce que ça change pour la défense) — pas une reformulation de
+ *    l'article sous un autre angle, un vrai commentaire indépendant.
+ * N'envoie jamais que le titre + l'extrait officiel (jamais l'article
+ * complet). Les deux textes sont publiés avec le nom de la source et un
+ * lien vers l'article original juste en dessous : ce n'est pas un article
+ * indépendant qui masquerait sa source, c'est un résumé de veille + un
+ * avis, qui doivent donner envie d'aller lire la source, pas la remplacer.
  */
 async function summarize({ title, excerpt, sourceNom }) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -120,15 +125,20 @@ async function summarize({ title, excerpt, sourceNom }) {
   }
 
   const prompt = `Tu aides à la veille en cybersécurité pour un site personnel francophone.
-Le résumé que tu vas produire sera toujours publié avec le nom de la source et un lien vers l'article original juste en dessous : ce n'est pas un article indépendant, c'est une fiche de veille qui doit donner envie d'aller lire la source, pas la remplacer.
+Le résultat sera toujours publié avec le nom de la source et un lien vers l'article original juste en dessous : ce n'est pas un article indépendant, c'est une fiche de veille qui doit donner envie d'aller lire la source, pas la remplacer.
 
-À partir du titre et de l'extrait officiel ci-dessous (jamais l'article complet), rédige :
-- un résumé factuel COURT (2 à 3 phrases maximum), en français, avec tes propres mots, sans jamais reprendre mot pour mot le texte source, et sans chercher à donner l'impression d'un reportage original ou indépendant ;
+À partir du titre et de l'extrait officiel ci-dessous (jamais l'article complet), rédige deux textes bien distincts :
+
+1. "resume" — un résumé factuel COURT (2 à 3 phrases maximum), en français, avec tes propres mots, sans jamais reprendre mot pour mot le texte source, et sans chercher à donner l'impression d'un reportage original ou indépendant. Uniquement les faits (qui, quoi, comment).
+
+2. "analyse" — un commentaire ORIGINAL de 3 à 5 phrases, en français, qui n'est PAS une reformulation du résumé ni de l'article : implications pour la défense, contexte technique plus large (pourquoi cette catégorie de faille/attaque compte), points de vigilance pour un professionnel. Base-toi uniquement sur des connaissances générales de cybersécurité, jamais sur des détails de l'extrait qui ne seraient pas déjà dans le résumé, et n'invente aucune expérience personnelle ni aucun fait non vérifiable.
+
+Rédige aussi :
 - si le titre original n'est pas en français, une traduction française naturelle du titre ;
 - 1 à 3 mots-clés pertinents en français (ex. "Ransomware", "Fuite de données").
 
 Réponds uniquement avec un objet JSON strict de la forme :
-{"titre": "...", "resume": "...", "tags": ["..."]}
+{"titre": "...", "resume": "...", "analyse": "...", "tags": ["..."]}
 
 Titre original : ${title}
 Source : ${sourceNom}
@@ -162,12 +172,14 @@ Extrait officiel : ${excerpt}`;
   return JSON.parse(jsonMatch[0]);
 }
 
-function writeVeilleFile({ link, date, sourceNom, titre, resume, tags }) {
+function writeVeilleFile({ link, date, sourceNom, titre, resume, analyse, tags }) {
   const slug = uniqueSlug(slugify(titre), link);
   const filePath = path.join(CONTENT_DIR, `${slug}.md`);
 
   const frontmatter = {
     title: titre,
+    // La carte de liste (ContentCard) n'affiche que ce champ : le résumé
+    // factuel court, pas l'analyse (qui elle n'apparaît que sur la fiche).
     description: resume,
     date,
     sourceNom,
@@ -177,8 +189,16 @@ function writeVeilleFile({ link, date, sourceNom, titre, resume, tags }) {
 
   // Le commentaire HTML est invisible à l'affichage (voir Prose.tsx) :
   // c'est un rappel pour la relecture humaine de la Pull Request, pas pour
-  // les visiteurs du site.
-  const corps = `<!-- Résumé généré automatiquement par IA à partir d'un extrait RSS officiel. Vérifier la fidélité à la source avant de fusionner. -->\n${resume}`;
+  // les visiteurs du site. Le corps distingue explicitement les faits
+  // (résumé) de l'avis (analyse) pour que ce soit clair pour le lecteur.
+  const corps = [
+    "<!-- Résumé + analyse générés automatiquement par IA à partir d'un extrait RSS officiel. Vérifier la fidélité à la source et s'approprier l'analyse avant de fusionner. -->",
+    resume,
+    "",
+    "## Pourquoi c'est important",
+    "",
+    analyse || "(analyse à compléter)",
+  ].join("\n");
 
   const fileContent = matter.stringify(`${corps}\n`, frontmatter);
   fs.mkdirSync(CONTENT_DIR, { recursive: true });
@@ -198,8 +218,8 @@ async function main() {
   let created = 0;
   for (const candidate of candidates) {
     try {
-      const { titre, resume, tags } = await summarize(candidate);
-      writeVeilleFile({ ...candidate, titre, resume, tags });
+      const { titre, resume, analyse, tags } = await summarize(candidate);
+      writeVeilleFile({ ...candidate, titre, resume, analyse, tags });
       created += 1;
     } catch (err) {
       console.warn(`[veille] Article ignoré ("${candidate.title}") : ${err.message}`);

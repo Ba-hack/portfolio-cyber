@@ -68,13 +68,17 @@ modèle exact) :
 - `content/recherches/ma-recherche.md` — champs : `title`, `description`,
   `date`, `tags`.
 - `content/veille/mon-resume.md` — champs : `title`, `description`,
-  `date`, `sourceNom`, `sourceUrl`, `tags`. **Toujours résumer avec ses
-  propres mots et ne jamais copier le texte de l'article original** —
-  seul un lien vers la source est publié (droit d'auteur). Voir aussi la
-  section [Veille automatique](#veille-cybersécurité-automatique)
+  `date`, `sourceNom`, `sourceUrl`, `tags`. Le corps du fichier distingue
+  deux parties (voir `exemple-fuite-de-donnees.md`) : un **résumé factuel
+  court avec ses propres mots** (jamais une copie du texte original —
+  droit d'auteur), puis une section **"Pourquoi c'est important"** avec
+  une vraie analyse personnelle — pas une reformulation de l'article sous
+  un autre angle, un commentaire original qui vous appartient. Un lien
+  vers la source (`sourceUrl`) reste toujours affiché sur la page. Voir
+  aussi la section [Veille automatique](#veille-cybersécurité-automatique)
   ci-dessous : la plupart des fiches de cette section sont générées par un
-  job quotidien (résumé par IA, à relire avant fusion) plutôt qu'écrites à
-  la main.
+  job quotidien (résumé + analyse par IA, à relire et s'approprier avant
+  fusion) plutôt qu'écrites à la main.
 
 Le nom du fichier (sans `.md`) devient l'URL de la page (le "slug"). Une
 fois le fichier ajouté et poussé sur GitHub, Vercel régénère
@@ -90,13 +94,16 @@ automatiquement, une fois par jour, des brouillons de fiches pour
    Krebs on Security, Dark Reading, CERT-FR avis et alertes — liste dans
    `scripts/veille/sources.mjs`) — uniquement le titre et l'extrait
    officiel fourni pour la syndication, jamais l'article complet.
-2. Fait reformuler cet extrait par un modèle de langage (Claude Haiku) en
-   un résumé factuel **court** (2-3 phrases) en français, avec ses propres
-   mots — jamais une copie du texte source, et jamais rédigé pour donner
-   l'impression d'un article indépendant : chaque fiche affiche de toute
-   façon `sourceNom` et un lien vers l'article original juste en dessous
-   (voir `src/app/cybersecurite/veille/[slug]/page.tsx`), c'est un résumé
-   de veille attribué, pas un article qui se fait passer pour original.
+2. Demande à un modèle de langage (Claude Haiku) de produire **deux textes
+   distincts** à partir de cet extrait : un résumé factuel **court**
+   (2-3 phrases, les faits) et une **analyse** originale (3-5 phrases :
+   implications pour la défense, contexte technique) — jamais une copie
+   du texte source, et jamais rédigés pour donner l'impression d'un
+   article indépendant : chaque fiche affiche de toute façon `sourceNom`
+   et un lien vers l'article original juste en dessous (voir
+   `src/app/cybersecurite/veille/[slug]/page.tsx`). L'analyse n'est pas
+   une reformulation de l'article sous un autre angle : c'est un vrai
+   commentaire, à s'approprier avant publication.
 3. Écrit un fichier Markdown par nouvel article (maximum 6 par exécution),
    en ignorant automatiquement les articles déjà publiés (comparaison sur
    `sourceUrl`).
