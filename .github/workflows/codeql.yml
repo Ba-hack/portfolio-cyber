@@ -51,7 +51,7 @@ jobs:
       # Initialise l'analyseur CodeQL pour le langage JavaScript/TypeScript
       # (identifiant unique "javascript-typescript" qui couvre les deux).
       - name: Initialiser CodeQL
-        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
         with:
           languages: javascript-typescript
           # "security-extended" ajoute des règles de sécurité supplémentaires
