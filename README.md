@@ -1,90 +1,77 @@
 # Portfolio Cybersécurité
 
-Site personnel : portfolio de projets, formations/TP pour débutants en
-cybersécurité, et une section dédiée à la cybersécurité (recherches
-personnelles + veille sur l'actualité). Une section Forum est prévue mais
-pas encore développée (voir [Prochaines étapes](#prochaines-étapes)).
+Portfolio professionnel personnel, recentré sur 4 sections : **Accueil**,
+**Projets**, **Formation & Certifications**, **Contact**. Les projets sont
+la pièce maîtresse du site — pas de tutoriels pour d'autres, pas de veille
+publique, pas de forum : un portfolio, pas une plateforme de contenu.
 
 ## Choix technologiques
 
 | Choix | Pourquoi |
 |---|---|
-| **Next.js 16 (App Router) + TypeScript** | Framework développé par Vercel, donc parfaitement intégré à son hébergement gratuit. Gère à la fois des pages statiques (rapides, gratuites) et, plus tard, des routes serverless si besoin (API du forum, etc.). TypeScript apporte des types qui évitent des bugs bêtes (champ oublié dans un article, etc.). |
-| **Tailwind CSS v4** | Style directement dans les composants, pas de gros fichiers CSS séparés à maintenir. La palette de couleurs est centralisée dans `src/app/globals.css`. |
-| **Contenu en Markdown versionné (`/content`)** | Pas de base de données pour l'instant : chaque projet/formation/article est un simple fichier `.md`. Gratuit, versionné avec Git (historique clair), et modifiable sans interface d'admin. Voir [Ajouter du contenu](#ajouter-du-contenu). |
-| **Vercel (hébergement)** | Déploiement automatique à chaque `git push`, généreux plan gratuit, HTTPS et nom de domaine `*.vercel.app` inclus. |
-
-Pas de base de données pour l'instant : c'est un choix assumé pour rester
-simple et gratuit tant que le contenu est en lecture seule. Le jour où le
-forum sera développé, il faudra une vraie base de données (voir plus bas).
+| **Next.js 16 (App Router) + TypeScript** | Framework développé par Vercel, donc parfaitement intégré à son hébergement gratuit. TypeScript apporte des types qui évitent des bugs bêtes (champ oublié dans une fiche projet, etc.). |
+| **Tailwind CSS v4** | Style directement dans les composants, pas de gros fichiers CSS séparés à maintenir. La palette de couleurs (thème clair/sombre) est centralisée dans `src/app/globals.css`. |
+| **Contenu en Markdown versionné (`/content`)** | Pas de base de données : chaque projet est un simple fichier `.md`. Gratuit, versionné avec Git (historique clair), modifiable sans interface d'admin. Voir [Ajouter un projet](#ajouter-un-projet). |
+| **Vercel (hébergement)** | Déploiement automatique à chaque `git push`, plan gratuit, HTTPS et nom de domaine `*.vercel.app` inclus. |
 
 ## Structure du projet
 
 ```
-content/                 # Tout le contenu éditorial, en Markdown
-  experiences/*.md        # Un fichier = une expérience (stage, association...)
-  portfolio/*.md          # Un fichier = un projet
-  formations/*.md         # Un fichier = un TP / une formation
-  recherches/*.md         # Un fichier = une recherche personnelle
-  veille/*.md              # Un fichier = un résumé d'article de presse
+content/
+  portfolio/*.md          # Un fichier = un projet (voir "Ajouter un projet")
+  veille/*.md              # Contenu généré par le pipeline de veille interne
+                            # (voir plus bas) — pas de page publique pour l'instant
 
 src/
-  app/                    # Routes du site (App Router de Next.js)
-    layout.tsx             # Structure commune à toutes les pages (header/footer)
-    page.tsx                # Page d'accueil
-    experience/              # /experience et /experience/[slug]
-    portfolio/               # /portfolio et /portfolio/[slug]
-    formations/               # /formations et /formations/[slug]
-    cybersecurite/              # /cybersecurite (hub)
-      recherches/                # /cybersecurite/recherches et [slug]
-      veille/                     # /cybersecurite/veille et [slug]
-    forum/                    # /forum (page d'attente pour l'instant)
-    globals.css              # Couleurs et styles de base du site
+  app/
+    layout.tsx             # Structure commune (header/footer), script anti-flash du thème
+    page.tsx                # Accueil
+    portfolio/               # /portfolio (liste) et /portfolio/[slug] (fiche projet)
+    formation/                # /formation (parcours + certifications, data.ts)
+    contact/                  # /contact
+    globals.css              # Thème clair/sombre, styles de base
 
-  components/             # Composants React réutilisés entre les pages
+  components/
+    Reveal.tsx              # Animation d'apparition au scroll (IntersectionObserver)
+    ThemeToggle.tsx          # Bouton de bascule clair/sombre
+    ...                       # Container, Header, Footer, Tag, ContentCard, Prose...
   lib/
     content.ts              # Fonctions qui lisent et parsent les fichiers Markdown
-    types.ts                 # Types TypeScript du frontmatter de chaque section
+    types.ts                 # Type du frontmatter des projets (PortfolioFrontmatter)
     format.ts                 # Petites fonctions utilitaires (formatage de date)
 
-  site.config.ts          # Nom du site, liens de nav, réseaux sociaux — à personnaliser
+  site.config.ts          # Nom, titre, liens de contact — à personnaliser
 ```
 
-## Ajouter du contenu
+## Ajouter un projet
 
-Chaque section correspond à un dossier dans `content/`. Pour ajouter un
-élément, créer un nouveau fichier `.md` dans le bon dossier avec le
-frontmatter attendu (voir les fichiers d'exemple déjà présents pour le
-modèle exact) :
+Créer un fichier dans `content/portfolio/` (le nom du fichier, sans
+`.md`, devient l'URL de la fiche). Frontmatter :
 
-- `content/experiences/mon-experience.md` — champs : `title`, `description`,
-  `date` (utilisée pour le tri), `organisation`, `role`, `periode` (texte
-  affiché tel quel, ex. "2022 – 2024"), `lieu` (optionnel), `tags`.
-- `content/portfolio/mon-projet.md` — champs : `title`, `description`,
-  `date`, `tags`, `lienDemo` (optionnel), `lienDepot` (optionnel).
-- `content/formations/mon-tp.md` — champs : `title`, `description`,
-  `date`, `niveau` (`Débutant` / `Intermédiaire` / `Avancé`), `duree`
-  (optionnel), `tags`.
-- `content/recherches/ma-recherche.md` — champs : `title`, `description`,
-  `date`, `tags`.
-- `content/veille/mon-resume.md` — champs : `title`, `description`,
-  `date`, `sourceNom`, `sourceUrl`, `tags`. Le corps du fichier distingue
-  deux parties (voir `exemple-fuite-de-donnees.md`) : un **résumé factuel
-  court avec ses propres mots** (jamais une copie du texte original —
-  droit d'auteur), puis une section **"Pourquoi c'est important"** avec
-  une vraie analyse personnelle — pas une reformulation de l'article sous
-  un autre angle, un commentaire original qui vous appartient. Un lien
-  vers la source (`sourceUrl`) reste toujours affiché sur la page. Voir
-  aussi la section [Veille automatique](#veille-cybersécurité-automatique)
-  ci-dessous : la plupart des fiches de cette section sont générées par un
-  job quotidien (résumé + analyse par IA, à relire et s'approprier avant
-  fusion) plutôt qu'écrites à la main.
+- `title`, `description` (résumé de 2-3 phrases, affiché en intro de la
+  fiche et sur la carte de liste), `date` (sert au tri).
+- `tags` (optionnel) — 2-4 tags thématiques courts affichés en haut de la
+  fiche (ex. `["Pentest", "Red Team"]`).
+- `stack` (optionnel) — liste complète des technologies utilisées,
+  affichée en bandeau en bas de fiche.
+- `lienDemo` / `lienDepot` (optionnels) — liens démo / dépôt de code.
+- `images` / `pdf` / `video` (optionnels, réservés pour plus tard) — la
+  page affiche une galerie, un lien de téléchargement ou un lien de démo
+  vidéo si l'un de ces champs est renseigné, et n'affiche rien sinon.
 
-Le nom du fichier (sans `.md`) devient l'URL de la page (le "slug"). Une
-fois le fichier ajouté et poussé sur GitHub, Vercel régénère
-automatiquement le site avec le nouveau contenu.
+Corps du fichier : une section `## Démarche` (le récit du projet) puis
+`## Exemples de mise en pratique` (liste à puces concrète) — voir les 4
+fiches existantes pour le modèle exact. Une fois poussé sur GitHub, Vercel
+régénère automatiquement le site avec le nouveau projet.
 
-## Veille cybersécurité automatique
+## Pipeline de veille interne (sans page publique)
+
+Ce pipeline reste actif en interne — c'est un point fort décrit dans la
+fiche projet ["Site Portfolio Sécurisé"](content/portfolio/site-portfolio-securise.md)
+— mais n'a plus de page publique dédiée depuis le recentrage du site sur
+4 sections (voir plus haut). `content/veille/*.md` continue d'être généré
+et versionné normalement ; il n'est simplement rendu sur aucune route pour
+l'instant.
 
 Un job planifié (`.github/workflows/veille-quotidienne.yml`) génère
 automatiquement, une fois par jour, des brouillons de fiches pour
@@ -99,11 +86,9 @@ automatiquement, une fois par jour, des brouillons de fiches pour
    (2-3 phrases, les faits) et une **analyse** originale (3-5 phrases :
    implications pour la défense, contexte technique) — jamais une copie
    du texte source, et jamais rédigés pour donner l'impression d'un
-   article indépendant : chaque fiche affiche de toute façon `sourceNom`
-   et un lien vers l'article original juste en dessous (voir
-   `src/app/cybersecurite/veille/[slug]/page.tsx`). L'analyse n'est pas
-   une reformulation de l'article sous un autre angle : c'est un vrai
-   commentaire, à s'approprier avant publication.
+   article indépendant. L'analyse n'est pas une reformulation de l'article
+   sous un autre angle : c'est un vrai commentaire, à s'approprier avant
+   publication.
 3. Écrit un fichier Markdown par nouvel article (maximum 6 par exécution),
    en ignorant automatiquement les articles déjà publiés (comparaison sur
    `sourceUrl`).
@@ -241,14 +226,15 @@ l'onglet **Actions** du dépôt GitHub — les workflows "SAST - CodeQL" et
 vert (un premier scan CodeQL peut prendre quelques minutes de plus que les
 suivants).
 
-## Prochaines étapes (hors périmètre de ce premier scratch)
+## Prochaines étapes
 
-- **Forum** : nécessitera des comptes utilisateurs et une vraie base de
-  données (ex. Postgres via Vercel Postgres/Neon, ou Supabase — les deux
-  ont un plan gratuit). C'est un changement d'architecture volontairement
-  reporté pour garder ce premier scratch simple.
-- **Automatiser la veille** : un script qui va chercher des articles
-  (RSS, API) et génère automatiquement un brouillon de résumé dans
-  `content/veille/`, à relire avant publication.
-- Remplir `src/site.config.ts` avec vos vraies informations (nom, liens
-  GitHub/LinkedIn) et personnaliser la page d'accueil (`src/app/page.tsx`).
+- **Photo de portrait et CV** : ajouter un fichier dans `/public` et
+  mettre à jour l'accueil (repli sur initiales) et `siteConfig.cvUrl`
+  (actuellement `undefined`, ce qui masque tous les boutons "Télécharger
+  mon CV" du site).
+- **Médias de projet** : les champs `images`/`pdf`/`video` du frontmatter
+  Portfolio sont prévus et gérés par la page, mais aucun projet n'en a
+  pour l'instant.
+- **Remettre une page publique pour la veille**, si souhaité un jour : le
+  pipeline tourne déjà, il ne manque qu'une route qui liste
+  `content/veille/*.md` (reprendre le modèle des pages `/portfolio`).

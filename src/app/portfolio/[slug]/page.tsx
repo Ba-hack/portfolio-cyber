@@ -87,9 +87,70 @@ export default async function ProjetPage({
         </div>
       )}
 
+      {/* Résumé "case study" : c'est ce qu'un recruteur lira en premier,
+          avant même la démarche détaillée ci-dessous. */}
+      <p className="mt-6 text-lg text-muted-foreground">
+        {frontmatter.description}
+      </p>
+
       <div className="mt-8">
         <Prose html={contentHtml} />
       </div>
+
+      {/* Blocs média optionnels : aucun n'est renseigné pour l'instant,
+          mais le frontmatter les prévoit déjà (voir lib/types.ts). Chaque
+          bloc ne s'affiche que si le champ correspondant est présent. */}
+      {frontmatter.images && frontmatter.images.length > 0 && (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {frontmatter.images.map((src) => (
+            // eslint-disable-next-line @next/next/no-img-element -- images de contenu Markdown, hors optimisation next/image
+            <img
+              key={src}
+              src={src}
+              alt=""
+              className="rounded-lg border border-border"
+            />
+          ))}
+        </div>
+      )}
+
+      {(frontmatter.pdf || frontmatter.video) && (
+        <div className="mt-8 flex flex-wrap gap-4 text-sm">
+          {frontmatter.pdf && (
+            <a
+              href={frontmatter.pdf}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg border border-accent px-4 py-2 font-medium text-accent transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              Télécharger le rapport (PDF) →
+            </a>
+          )}
+          {frontmatter.video && (
+            <a
+              href={frontmatter.video}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg border border-accent px-4 py-2 font-medium text-accent transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              Voir la démo vidéo →
+            </a>
+          )}
+        </div>
+      )}
+
+      {frontmatter.stack && frontmatter.stack.length > 0 && (
+        <div className="mt-10 border-t border-border pt-6">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Stack
+          </h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {frontmatter.stack.map((techno) => (
+              <Tag key={techno}>{techno}</Tag>
+            ))}
+          </div>
+        </div>
+      )}
     </Container>
   );
 }
