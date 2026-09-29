@@ -6,30 +6,61 @@
  * tailwind.config.js séparé) : elles deviennent utilisables comme classes
  * utilitaires, ex. `bg-surface`, `text-accent`, `border-border`.
  *
- * Palette volontairement sobre : peu de couleurs, un seul accent (un vert
- * "terminal" discret, cohérent avec le thème cybersécurité), pour un rendu
- * clair et professionnel plutôt que "gadget".
+ * Palette volontairement sobre : bleu marine/anthracite avec un seul
+ * accent bleu ciel discret — professionnel, pas un thème "hacker terminal"
+ * (pas de vert néon sur noir).
+ *
+ * Trois niveaux de priorité pour choisir la palette active, du plus
+ * faible au plus fort :
+ *   1. `:root` ci-dessous = palette claire, valeur par défaut.
+ *   2. `prefers-color-scheme: dark` = bascule vers la palette sombre si
+ *      le système du visiteur la préfère ET qu'il n'a rien choisi
+ *      manuellement sur le site (`:root:not([data-theme])`).
+ *   3. `[data-theme="dark"]` / `[data-theme="light"]` = choix explicite
+ *      du visiteur via le bouton de bascule (voir ThemeToggle.tsx),
+ *      mémorisé en localStorage — l'emporte sur les deux règles
+ *      précédentes.
  */
 :root {
   --background: #ffffff;
-  --foreground: #14171a;
-  --surface: #f6f7f8;
-  --border: #e2e5e8;
-  --muted-foreground: #5b6570;
-  --accent: #0f7a5f;
+  --foreground: #101728;
+  --surface: #f1f4f9;
+  --border: #dbe2ec;
+  --muted-foreground: #57647a;
+  --accent: #1d4ed8;
   --accent-foreground: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0b0d0f;
-    --foreground: #e7eaec;
-    --surface: #14171a;
-    --border: #262b30;
-    --muted-foreground: #97a1aa;
-    --accent: #3ddc97;
-    --accent-foreground: #0b0d0f;
+  :root:not([data-theme]) {
+    --background: #0a0e1a;
+    --foreground: #e8ecf4;
+    --surface: #121a2b;
+    --border: #232d42;
+    --muted-foreground: #8b93a7;
+    --accent: #5eb8ff;
+    --accent-foreground: #0a0e1a;
   }
+}
+
+:root[data-theme="dark"] {
+  --background: #0a0e1a;
+  --foreground: #e8ecf4;
+  --surface: #121a2b;
+  --border: #232d42;
+  --muted-foreground: #8b93a7;
+  --accent: #5eb8ff;
+  --accent-foreground: #0a0e1a;
+}
+
+:root[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #101728;
+  --surface: #f1f4f9;
+  --border: #dbe2ec;
+  --muted-foreground: #57647a;
+  --accent: #1d4ed8;
+  --accent-foreground: #ffffff;
 }
 
 @theme inline {
@@ -47,6 +78,40 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/*
+ * Animation légère au scroll (voir components/Reveal.tsx) : un élément
+ * commence légèrement translaté et transparent, puis reprend sa place
+ * normale dès qu'il entre dans le viewport. Pas de dépendance ajoutée,
+ * juste une classe togglée par IntersectionObserver.
+ */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+.reveal.reveal-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Respecte la préférence système : personne ne doit subir une animation
+   qu'il a explicitement demandé à éviter. */
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .reveal {
+    transition: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /*

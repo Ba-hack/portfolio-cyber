@@ -1,73 +1,46 @@
 /**
  * Types TypeScript pour le "frontmatter" (les métadonnées en en-tête, au
- * format YAML) de chaque type de contenu Markdown du site.
+ * format YAML) du contenu Markdown du site.
  *
- * Chaque fichier .md dans content/<type>/ commence par un bloc comme :
+ * Chaque fichier .md dans content/portfolio/ commence par un bloc comme :
  *
  *   ---
  *   title: "Mon projet"
  *   description: "Résumé en une phrase."
  *   date: "2026-01-15"
- *   tags: ["web", "sécurité"]
+ *   tags: ["Pentest", "Red Team"]
+ *   stack: ["Kali Linux", "Nmap", "Metasploit"]
  *   ---
  *
- * Ces interfaces décrivent la forme attendue de ce bloc pour chaque
- * section du site, afin d'avoir de l'autocomplétion et des erreurs de
- * type si un champ est oublié ou mal orthographié.
+ * `PortfolioFrontmatter` décrit la forme attendue de ce bloc, pour avoir
+ * de l'autocomplétion et des erreurs de type si un champ est oublié ou
+ * mal orthographié.
  */
 
-/** Champs communs à tous les types de contenu. */
-interface FrontmatterCommun {
+/** Un projet présenté dans la section Projets. */
+export interface PortfolioFrontmatter {
   title: string;
+  /** Résumé de 2-3 phrases, affiché en intro de la fiche et sur la carte de liste. */
   description: string;
-  /** Date au format ISO ("AAAA-MM-JJ"), utilisée pour trier les listes. */
+  /** Date au format ISO ("AAAA-MM-JJ"), utilisée pour trier la liste. */
   date: string;
+  /** Tags thématiques courts affichés en haut de la fiche (ex. "Pentest", "Red Team"). */
   tags?: string[];
-}
-
-/** Un projet présenté dans la section Portfolio. */
-export interface PortfolioFrontmatter extends FrontmatterCommun {
+  /** Liste complète des technologies utilisées, affichée en bandeau en bas de fiche. */
+  stack?: string[];
   /** Lien vers une démo en ligne, si elle existe. */
   lienDemo?: string;
   /** Lien vers le dépôt de code source (GitHub, GitLab...). */
   lienDepot?: string;
-}
-
-/** Un TP ou une formation, listé dans la section Formations. */
-export interface FormationFrontmatter extends FrontmatterCommun {
-  niveau: "Débutant" | "Intermédiaire" | "Avancé";
-  /** Durée indicative, ex. "2h", "1 jour". */
-  duree?: string;
-}
-
-/** Une recherche personnelle publiée dans Cybersécurité > Recherches. */
-export type RechercheFrontmatter = FrontmatterCommun;
-
-/**
- * Une expérience (stage, engagement associatif...), listée dans la
- * section Expérience — le pendant "CV" du site, distinct du Portfolio qui
- * lui rassemble des projets techniques autonomes.
- */
-export interface ExperienceFrontmatter extends FrontmatterCommun {
-  /** Structure concernée, ex. "CF Consulting". */
-  organisation: string;
-  /** Intitulé du rôle occupé, ex. "Stagiaire opérateur". */
-  role: string;
-  /** Période affichée telle quelle, ex. "Depuis juin 2026" ou "2022 – 2024". */
-  periode: string;
-  lieu?: string;
-}
-
-/**
- * Un article de veille : résumé d'un article de presse externe, avec un
- * lien vers la source originale (jamais le texte intégral recopié, pour
- * respecter le droit d'auteur — voir README).
- */
-export interface VeilleFrontmatter extends FrontmatterCommun {
-  /** Nom du média source, ex. "Le Monde Informatique". */
-  sourceNom: string;
-  /** Lien vers l'article original. */
-  sourceUrl: string;
+  /**
+   * Champs réservés pour de futurs médias (non utilisés pour l'instant) :
+   * la page projet les affiche s'ils sont présents, ne montre rien sinon.
+   */
+  images?: string[];
+  /** Lien vers un rapport ou document à télécharger. */
+  pdf?: string;
+  /** Lien vers une démo vidéo. */
+  video?: string;
 }
 
 /** Un item de contenu complet : ses métadonnées + son corps rendu en HTML. */

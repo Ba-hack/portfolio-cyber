@@ -1,16 +1,12 @@
 /**
  * Chargement du contenu Markdown.
  *
- * Choix d'architecture : plutôt qu'une base de données, tout le contenu
- * éditorial (projets, formations, articles) est stocké sous forme de
- * fichiers Markdown dans /content, versionnés avec le code sur GitHub.
- * Avantages pour ce projet :
+ * Choix d'architecture : plutôt qu'une base de données, le contenu des
+ * projets est stocké sous forme de fichiers Markdown dans /content,
+ * versionnés avec le code sur GitHub. Avantages pour ce projet :
  *   - Gratuit, aucune infrastructure à gérer (pas de BDD à payer/sécuriser).
  *   - Chaque ajout de contenu = un commit Git, donc un historique clair.
  *   - Simple à comprendre et à modifier, même sans interface d'admin.
- * Limite connue : pas adapté à du contenu généré par les visiteurs (d'où
- * le fait que le forum, lui, nécessitera une vraie base de données plus
- * tard). Pour un blog/portfolio en lecture seule, c'est largement suffisant.
  *
  * Ces fonctions ne s'exécutent que côté serveur (Server Components, appelées
  * au moment du build grâce à generateStaticParams) : jamais dans le
@@ -28,12 +24,7 @@ import type { ContentItem } from "./types";
 const CONTENT_ROOT = path.join(process.cwd(), "content");
 
 /** Types de contenu gérés, un par sous-dossier de /content. */
-export type ContentType =
-  | "portfolio"
-  | "formations"
-  | "recherches"
-  | "veille"
-  | "experiences";
+export type ContentType = "portfolio";
 
 function getContentDir(type: ContentType): string {
   return path.join(CONTENT_ROOT, type);
@@ -81,7 +72,7 @@ export async function getContentBySlug<T>(
 
 /**
  * Charge tous les contenus d'un type donné, triés du plus récent au plus
- * ancien (utilisé pour les pages de liste : /portfolio, /formations...).
+ * ancien (utilisé par la page de liste /portfolio).
  */
 export async function getAllContent<T extends { date: string }>(
   type: ContentType,

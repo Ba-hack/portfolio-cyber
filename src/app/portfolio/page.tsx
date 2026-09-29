@@ -6,7 +6,7 @@ import { getAllContent } from "@/lib/content";
 import type { PortfolioFrontmatter } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Portfolio",
+  title: "Projets",
   description: "Projets techniques réalisés.",
 };
 
@@ -16,7 +16,7 @@ export default async function PortfolioPage() {
   return (
     <Container>
       <PageHeader
-        title="Portfolio"
+        title="Projets"
         description="Une sélection de projets sur lesquels j'ai travaillé."
       />
 
