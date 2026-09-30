@@ -1,17 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { Reveal } from "@/components/Reveal";
 import { siteConfig } from "@/site.config";
-
-/**
- * Initiales calculées à partir du nom, utilisées comme repli sobre pour le
- * portrait tant qu'aucune photo n'est fournie dans /public (voir
- * siteConfig.cvUrl pour le même principe côté CV).
- */
-function initiales(nom: string): string {
-  const mots = nom.trim().split(/\s+/);
-  return (mots[0]?.[0] ?? "") + (mots[mots.length - 1]?.[0] ?? "");
-}
 
 export default function AccueilPage() {
   return (
@@ -35,9 +26,7 @@ export default function AccueilPage() {
           </p>
 
           <p className="mt-4 max-w-xl text-muted-foreground">
-            J&apos;ai réalisé un stage cybersécurité chez CF Consulting
-            (22 juin – 28 août 2026) sur la sécurisation de plateformes
-            bancaires digitales, et je recherche maintenant un stage de fin
+            Je recherche maintenant un stage de fin
             d&apos;études (PFE) à partir de février 2027.
           </p>
 
@@ -67,15 +56,19 @@ export default function AccueilPage() {
           </div>
         </Reveal>
 
-        {/* Portrait : cadre sobre avec initiales tant qu'aucune photo
-            n'est fournie. Remplacer par une vraie image dans /public une
-            fois disponible (garder le rendu net, sans overlay opaque). */}
+        {/* Portrait net, sans overlay : la photo doit rester reconnaissable
+            (voir consignes de design du site). `fill` + `object-cover`
+            recadre proprement l'image (portrait 3:4) dans le cercle. */}
         <Reveal className="shrink-0">
-          <div
-            aria-hidden="true"
-            className="flex size-32 items-center justify-center rounded-full border border-border bg-surface text-3xl font-semibold text-muted-foreground sm:size-40"
-          >
-            {initiales(siteConfig.name)}
+          <div className="relative size-32 overflow-hidden rounded-full border border-border sm:size-40">
+            <Image
+              src="/portrait.jpg"
+              alt={`Portrait de ${siteConfig.name}`}
+              fill
+              sizes="(min-width: 640px) 10rem, 8rem"
+              className="object-cover"
+              priority
+            />
           </div>
         </Reveal>
       </div>
