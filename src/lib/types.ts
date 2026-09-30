@@ -22,8 +22,20 @@ export interface PortfolioFrontmatter {
   title: string;
   /** Résumé de 2-3 phrases, affiché en intro de la fiche et sur la carte de liste. */
   description: string;
-  /** Date au format ISO ("AAAA-MM-JJ"), utilisée pour trier la liste. */
+  /** Date au format ISO ("AAAA-MM-JJ"), utilisée en repli si `ordre` est absent. */
   date: string;
+  /**
+   * Position manuelle dans la liste /portfolio (1 = premier). Sans ce
+   * champ, l'entrée se trie par `date` (plus récent d'abord) après toutes
+   * les entrées qui en ont un.
+   */
+  ordre?: number;
+  /**
+   * Période affichée telle quelle à la place de `date` sur la fiche
+   * (ex. "22 juin 2026 – 28 août 2026"), utile pour un stage ou une
+   * expérience avec une durée précise plutôt qu'une date ponctuelle.
+   */
+  periode?: string;
   /** Tags thématiques courts affichés en haut de la fiche (ex. "Pentest", "Red Team"). */
   tags?: string[];
   /** Liste complète des technologies utilisées, affichée en bandeau en bas de fiche. */

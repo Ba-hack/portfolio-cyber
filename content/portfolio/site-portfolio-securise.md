@@ -2,6 +2,7 @@
 title: "Site Portfolio Sécurisé — CI/CD & Automatisation (en cours)"
 description: "Développer et déployer un site portfolio en intégrant dès la conception les pratiques de sécurité applicative et d'automatisation attendues d'un projet professionnel — Next.js/TypeScript, déploiement automatique sur Vercel, contenu versionné en Markdown."
 date: "2026-09-18"
+ordre: 5
 tags: ["DevSecOps", "CI/CD", "Next.js"]
 stack:
   [

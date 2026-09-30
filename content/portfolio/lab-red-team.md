@@ -2,6 +2,7 @@
 title: "Lab Cybersécurité Virtualisé — Red Team"
 description: "Construire un environnement réseau isolé pour pratiquer la méthodologie offensive de bout en bout, sur des systèmes informatiques classiques comme sur des environnements industriels — lab virtualisé avec VirtualBox (Kali Linux, Windows 10/11, cibles OWASP) sur un réseau isolé."
 date: "2025-09-01"
+ordre: 2
 tags: ["Pentest", "Red Team", "ICS/OT"]
 stack:
   [
