@@ -228,10 +228,10 @@ suivants).
 
 ## Prochaines étapes
 
-- **Photo de portrait et CV** : ajouter un fichier dans `/public` et
-  mettre à jour l'accueil (repli sur initiales) et `siteConfig.cvUrl`
-  (actuellement `undefined`, ce qui masque tous les boutons "Télécharger
-  mon CV" du site).
+- **CV** : ajouter un fichier PDF dans `/public` et renseigner
+  `siteConfig.cvUrl` (actuellement `undefined`, ce qui masque tous les
+  boutons "Télécharger mon CV" du site). La photo de portrait, elle, est
+  déjà en place (`public/portrait.jpg`, affichée sur l'accueil).
 - **Médias de projet** : les champs `images`/`pdf`/`video` du frontmatter
   Portfolio sont prévus et gérés par la page, mais aucun projet n'en a
   pour l'instant.
