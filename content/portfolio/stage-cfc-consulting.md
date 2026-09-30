@@ -2,6 +2,8 @@
 title: "Stagiaire Cybersécurité — CFC Consulting (2026)"
 description: "Sécurisation de plateformes bancaires digitales — sécuriser une banque digitale et une plateforme de bourse en ligne, au stade de POC, de l'analyse des risques jusqu'à la remédiation. Analyse de risques STRIDE sur les deux plateformes, cartographie des actifs sensibles et priorisation dans une matrice de risque."
 date: "2026-06-22"
+ordre: 1
+periode: "22 juin 2026 – 28 août 2026"
 tags: ["Threat Modeling", "IAM", "Pentest"]
 stack:
   [

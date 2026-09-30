@@ -26,10 +26,19 @@ export default function AccueilPage() {
           <p className="mt-6 max-w-xl text-muted-foreground">
             Élève ingénieur généraliste à l&apos;École Centrale Casablanca,
             spécialisé en cybersécurité offensive et défensive — du pentest
-            classique aux environnements industriels (IT/OT). Actuellement
-            en stage chez CF Consulting sur la sécurisation de plateformes
-            bancaires digitales, je recherche un stage de fin d&apos;études
-            (PFE) à partir de février 2027.
+            classique aux environnements industriels (IT/OT). Autonome et
+            avant tout pratique : je préfère mettre mes compétences à
+            l&apos;épreuve dans des labs personnels plutôt que de m&apos;en
+            tenir à la théorie, et je fais une veille active sur
+            l&apos;actualité cybersécurité pour rester à jour sur les
+            menaces et les outils du secteur.
+          </p>
+
+          <p className="mt-4 max-w-xl text-muted-foreground">
+            J&apos;ai réalisé un stage cybersécurité chez CF Consulting
+            (22 juin – 28 août 2026) sur la sécurisation de plateformes
+            bancaires digitales, et je recherche maintenant un stage de fin
+            d&apos;études (PFE) à partir de février 2027.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -77,9 +86,9 @@ export default function AccueilPage() {
             href="/portfolio"
             className="rounded-lg border border-border p-5 transition-colors hover:border-accent"
           >
-            <h2 className="font-semibold">Projets</h2>
+            <h2 className="font-semibold">Projets & Expérience</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Labs Red Team / Blue Team, IT/OT, et ce site lui-même.
+              Stage, labs Red Team / Blue Team, et ce site lui-même.
             </p>
           </Link>
           <Link

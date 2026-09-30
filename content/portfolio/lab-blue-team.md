@@ -2,6 +2,7 @@
 title: "Lab Cybersécurité Virtualisé — Blue Team"
 description: "Concevoir une architecture réseau segmentée et défendable, puis la doter de moyens de détection pour identifier les tentatives d'intrusion — pfSense en pare-feu/passerelle pour segmenter LAN et DMZ, avec une politique deny by default."
 date: "2026-09-10"
+ordre: 3
 tags: ["Blue Team", "pfSense", "IDS"]
 stack: ["VirtualBox", "pfSense", "Suricata", "Kali Linux"]
 ---

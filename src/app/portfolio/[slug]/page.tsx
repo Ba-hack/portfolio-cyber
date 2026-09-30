@@ -47,7 +47,7 @@ export default async function ProjetPage({
     <Container>
       <p className="text-sm text-muted-foreground">
         <time dateTime={frontmatter.date}>
-          {formatDate(frontmatter.date)}
+          {frontmatter.periode ?? formatDate(frontmatter.date)}
         </time>
       </p>
       <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">

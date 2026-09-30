@@ -40,7 +40,7 @@ export const siteConfig = {
  * site dans l'en-tête fait déjà office de lien vers l'accueil.
  */
 export const navLinks = [
-  { href: "/portfolio", label: "Projets" },
+  { href: "/portfolio", label: "Projets & Expérience" },
   { href: "/formation", label: "Formation & Certifications" },
   { href: "/contact", label: "Contact" },
 ] as const;

@@ -2,16 +2,13 @@ import Link from "next/link";
 import { Tag } from "./Tag";
 import { formatDate } from "@/lib/format";
 
-/**
- * Carte utilisée dans toutes les pages de liste (portfolio, formations,
- * recherches, veille) : un seul composant partagé pour garder un rendu
- * visuel cohérent entre les sections.
- */
+/** Carte utilisée sur la page de liste /portfolio. */
 export function ContentCard({
   href,
   title,
   description,
   date,
+  dateLabel,
   tags,
   meta,
 }: {
@@ -19,6 +16,8 @@ export function ContentCard({
   title: string;
   description: string;
   date: string;
+  /** Texte affiché à la place de la date formatée (ex. une période "22 juin – 28 août 2026"). */
+  dateLabel?: string;
   tags?: string[];
   /** Emplacement libre pour une info spécifique à la section (ex: niveau, source). */
   meta?: React.ReactNode;
@@ -29,7 +28,7 @@ export function ContentCard({
       className="block rounded-lg border border-border p-5 transition-colors hover:border-accent"
     >
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-        <time dateTime={date}>{formatDate(date)}</time>
+        <time dateTime={date}>{dateLabel ?? formatDate(date)}</time>
         {meta}
       </div>
 
