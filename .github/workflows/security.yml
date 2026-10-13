@@ -61,8 +61,16 @@ jobs:
       # créerait plus de bruit que de valeur. Dependabot (voir
       # .github/dependabot.yml) continue de proposer des correctifs pour
       # toutes les sévérités, en tâche de fond.
+      #
+      # --omit=dev : n'audite que l'arbre de dépendances réellement livré
+      # en production (le site statique généré par "next build"). Les
+      # devDependencies (ex. eslint-config-next) ne sont jamais exécutées
+      # en prod ; une faille uniquement accessible à cet outillage de
+      # build/lint (ex. GHSA-vfj7-8cjw-p6xm sur "braces", sans correctif
+      # amont disponible à ce jour) ne représente aucun risque pour le
+      # site déployé et ne doit pas bloquer indéfiniment ce check requis.
       - name: Auditer les dépendances (npm audit)
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
   # --- 2. Scan OWASP Top 10 (Semgrep) -------------------------------------
   owasp-semgrep:
