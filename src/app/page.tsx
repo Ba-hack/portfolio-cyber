@@ -27,7 +27,7 @@ export default function AccueilPage() {
 
           <p className="mt-4 max-w-xl text-muted-foreground">
             Je recherche maintenant un stage de fin
-            d&apos;études (PFE) à partir de février 2027.
+            d&apos;études (PFE) à partir de mars 2027.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
