@@ -62,7 +62,7 @@ export default function AccueilPage() {
         <Reveal className="shrink-0">
           <div className="relative size-32 overflow-hidden rounded-full border border-border sm:size-40">
             <Image
-              src="/portrait.jpg"
+              src="/portrait.png"
               alt={`Portrait de ${siteConfig.name}`}
               fill
               sizes="(min-width: 640px) 10rem, 8rem"
