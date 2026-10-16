@@ -37,6 +37,8 @@ export interface Certification {
   /** Ligne de contexte courte : quel projet ou quelle compétence elle a nourri. */
   contexte?: string;
   enPreparation?: boolean;
+  /** Lien externe de vérification (Credly, page officielle de l'émetteur...). */
+  verifyUrl?: string;
 }
 
 export const certifications: Certification[] = [

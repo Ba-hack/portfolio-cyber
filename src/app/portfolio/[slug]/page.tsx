@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/Container";
 import { Prose } from "@/components/Prose";
 import { Tag } from "@/components/Tag";
+import { EvidenceGrid } from "@/components/EvidenceGrid";
 import { formatDate } from "@/lib/format";
 import { getAllSlugs, getContentBySlug } from "@/lib/content";
 import type { PortfolioFrontmatter } from "@/lib/types";
@@ -97,45 +98,17 @@ export default async function ProjetPage({
         <Prose html={contentHtml} />
       </div>
 
-      {/* Blocs média optionnels : aucun n'est renseigné pour l'instant,
-          mais le frontmatter les prévoit déjà (voir lib/types.ts). Chaque
-          bloc ne s'affiche que si le champ correspondant est présent. */}
-      {frontmatter.images && frontmatter.images.length > 0 && (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {frontmatter.images.map((src) => (
-            // eslint-disable-next-line @next/next/no-img-element -- images de contenu Markdown, hors optimisation next/image
-            <img
-              key={src}
-              src={src}
-              alt=""
-              className="rounded-lg border border-border"
-            />
-          ))}
-        </div>
-      )}
-
-      {(frontmatter.pdf || frontmatter.video) && (
-        <div className="mt-8 flex flex-wrap gap-4 text-sm">
-          {frontmatter.pdf && (
-            <a
-              href={frontmatter.pdf}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-accent px-4 py-2 font-medium text-accent transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
-              Télécharger le rapport (PDF) →
-            </a>
-          )}
-          {frontmatter.video && (
-            <a
-              href={frontmatter.video}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-accent px-4 py-2 font-medium text-accent transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
-              Voir la démo vidéo →
-            </a>
-          )}
+      {/* Registre de preuves : chaque pièce renvoie à un élément
+          consultable (vidéo, capture, PDF, log, schéma). Ne s'affiche que
+          si le projet en a au moins une (voir lib/types.ts). */}
+      {frontmatter.evidences && frontmatter.evidences.length > 0 && (
+        <div className="mt-10 border-t border-border pt-6">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Preuves
+          </h2>
+          <div className="mt-3">
+            <EvidenceGrid evidences={frontmatter.evidences} />
+          </div>
         </div>
       )}
 

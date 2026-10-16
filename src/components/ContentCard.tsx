@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Tag } from "./Tag";
+import { EvidenceStrength } from "./EvidenceStrength";
 import { formatDate } from "@/lib/format";
 
 /** Carte utilisée sur la page de liste /portfolio. */
@@ -11,6 +12,7 @@ export function ContentCard({
   dateLabel,
   tags,
   meta,
+  evidenceStrength,
 }: {
   href: string;
   title: string;
@@ -21,6 +23,8 @@ export function ContentCard({
   tags?: string[];
   /** Emplacement libre pour une info spécifique à la section (ex: niveau, source). */
   meta?: React.ReactNode;
+  /** Nombre de pièces au registre de preuves du projet (0 à 4+), affiché en barres. */
+  evidenceStrength?: number;
 }) {
   return (
     <Link
@@ -29,7 +33,12 @@ export function ContentCard({
     >
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <time dateTime={date}>{dateLabel ?? formatDate(date)}</time>
-        {meta}
+        <span className="flex items-center gap-3">
+          {meta}
+          {evidenceStrength !== undefined && (
+            <EvidenceStrength level={evidenceStrength} />
+          )}
+        </span>
       </div>
 
       <h3 className="mt-2 font-semibold">{title}</h3>
