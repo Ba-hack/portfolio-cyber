@@ -40,14 +40,26 @@ export default function FormationPage() {
         <ul className="mt-4 space-y-4">
           {certifications.map((cert) => (
             <li key={cert.nom} className="rounded-lg border border-border p-4">
-              <p className="font-medium">
-                {cert.nom}
-                {cert.enPreparation && (
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
-                    (en préparation)
-                  </span>
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="font-medium">
+                  {cert.nom}
+                  {cert.enPreparation && (
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      (en préparation)
+                    </span>
+                  )}
+                </p>
+                {cert.verifyUrl && (
+                  <a
+                    href={cert.verifyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-accent underline underline-offset-2"
+                  >
+                    vérifier ↗
+                  </a>
                 )}
-              </p>
+              </div>
               {cert.contexte && (
                 <p className="mt-1 text-sm text-muted-foreground">
                   {cert.contexte}

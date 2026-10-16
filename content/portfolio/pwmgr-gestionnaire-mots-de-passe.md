@@ -5,6 +5,12 @@ date: "2026-02-28"
 ordre: 4
 tags: ["Python", "Cryptographie", "CLI", "Sécurité applicative"]
 lienDepot: "https://github.com/Ba-hack/password-manager"
+evidences:
+  - id: "EV-01"
+    type: "capture"
+    src: "/evidence/pwmgr/ev-01-placeholder.svg"
+    titre: "Exemple de pièce (placeholder) — à remplacer par une vraie capture CLI"
+    hash: "df19c0dedc80ab4175b38973621f5c3e37dc3c2fe54ad29cf39eea0b793a9024"
 ---
 
 ## Objectif

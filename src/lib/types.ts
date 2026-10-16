@@ -17,6 +17,32 @@
  * mal orthographié.
  */
 
+/** Type d'une pièce du registre de preuves d'un projet. */
+export type EvidenceType = "video" | "capture" | "pdf" | "log" | "schema";
+
+/**
+ * Une pièce vérifiable attachée à un projet (vidéo, capture d'écran, PDF,
+ * extrait de log, schéma) — l'idée du "registre de preuves" : toute
+ * affirmation du texte doit pouvoir renvoyer à une pièce consultable.
+ */
+export interface Evidence {
+  /** Identifiant court affiché tel quel, ex. "EV-01". */
+  id: string;
+  type: EvidenceType;
+  /** Chemin sous /public, ou URL externe (ex. vidéo hébergée). */
+  src: string;
+  /** Légende courte affichée sous la pièce. */
+  titre: string;
+  /** Empreinte SHA-256 du fichier, si statique et calculable. */
+  hash?: string;
+  /**
+   * Pièce recréée/anonymisée plutôt qu'un export brut (ex. données d'une
+   * mission cliente sous NDA) — affiche un badge explicite plutôt que de
+   * laisser croire à une pièce brute.
+   */
+  anonymise?: boolean;
+}
+
 /** Un projet présenté dans la section Projets. */
 export interface PortfolioFrontmatter {
   title: string;
@@ -45,14 +71,11 @@ export interface PortfolioFrontmatter {
   /** Lien vers le dépôt de code source (GitHub, GitLab...). */
   lienDepot?: string;
   /**
-   * Champs réservés pour de futurs médias (non utilisés pour l'instant) :
-   * la page projet les affiche s'ils sont présents, ne montre rien sinon.
+   * Registre de preuves du projet : chaque pièce est affichée dans l'ordre,
+   * avec son type, son identifiant et son éventuelle empreinte. Absent ou
+   * vide tant qu'aucune pièce n'est encore fournie.
    */
-  images?: string[];
-  /** Lien vers un rapport ou document à télécharger. */
-  pdf?: string;
-  /** Lien vers une démo vidéo. */
-  video?: string;
+  evidences?: Evidence[];
 }
 
 /** Un item de contenu complet : ses métadonnées + son corps rendu en HTML. */

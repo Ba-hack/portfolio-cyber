@@ -42,7 +42,7 @@ export default async function PortfolioPage() {
           Aucun projet publié pour l&apos;instant.
         </p>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projets.map((projet) => (
             <ContentCard
               key={projet.slug}
@@ -52,6 +52,7 @@ export default async function PortfolioPage() {
               date={projet.frontmatter.date}
               dateLabel={projet.frontmatter.periode}
               tags={projet.frontmatter.tags}
+              evidenceStrength={projet.frontmatter.evidences?.length ?? 0}
             />
           ))}
         </div>

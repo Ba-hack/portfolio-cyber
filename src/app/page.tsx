@@ -9,7 +9,12 @@ export default function AccueilPage() {
     <Container>
       <div className="flex flex-col-reverse items-center gap-8 sm:flex-row sm:items-center">
         <Reveal className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-xs text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-accent" />
+            DISPONIBLE · PFE À PARTIR DE MARS 2027
+          </span>
+
+          <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
             {siteConfig.name}
           </h1>
           <p className="mt-2 text-lg text-accent">{siteConfig.titre}</p>
@@ -23,11 +28,6 @@ export default function AccueilPage() {
             tenir à la théorie, et je fais une veille active sur
             l&apos;actualité cybersécurité pour rester à jour sur les
             menaces et les outils du secteur.
-          </p>
-
-          <p className="mt-4 max-w-xl text-muted-foreground">
-            Je recherche maintenant un stage de fin
-            d&apos;études (PFE) à partir de mars 2027.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
